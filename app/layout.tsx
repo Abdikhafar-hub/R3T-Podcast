@@ -18,7 +18,12 @@ export const metadata = {
   title: "Roots, Routes & Real Talk (R3T) | Podcast",
   description:
     "Conversations that make you think, laugh, and find your rhythm. Navigating work, life, and everything in between with humour, honesty, and music.",
-    generator: 'Abdikhafar Issack'
+  generator: 'Abdikhafar Issack',
+  icons: {
+    icon: '/r3t-logo.png',
+    shortcut: '/r3t-logo.png',
+    apple: '/r3t-logo.png',
+  },
 }
 
 export default function RootLayout({
