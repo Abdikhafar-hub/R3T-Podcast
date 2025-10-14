@@ -76,7 +76,7 @@ export default function Footer() {
                 className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-all duration-300 flex items-center gap-2 group"
               >
                 <Mail className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                hello@r3tpodcast.com
+                info@routesroutesrealtalk.com
               </a>
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

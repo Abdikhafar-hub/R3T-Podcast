@@ -12,12 +12,7 @@ const testimonials = [
     role: "Producer",
     avatar: "/producer.jpg",
   },
-  {
-    quote: "The perfect blend of humor, real talk, and music. Serufusa and Hewan have created something truly special.",
-    name: "Gilbert Nyandeje",
-    role: "Entrepreneur & Information Security Consultant",
-    avatar: "/gilbert.jpeg",
-  },
+  
   {
     quote: "Finally, a podcast that tackles work-life balance without the corporate BS. Raw, honest, and refreshing.",
     name: "Jane Doe",
