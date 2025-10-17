@@ -36,7 +36,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           <Link href="/" className="flex items-center">
-            <Image src="/r3t-logo.png" alt="R3T Podcast Logo" width={100} height={100} className="h-16 w-auto sm:h-18 md:h-20" />
+            <Image src="/logo.png" alt="R3T Podcast Logo" width={100} height={100} className="h-16 w-auto sm:h-18 md:h-20" />
           </Link>
 
           {/* Desktop Navigation */}
