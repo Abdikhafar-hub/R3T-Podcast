@@ -41,7 +41,7 @@ export default function Footer() {
         >
           {/* Logo & Description */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Image src="/logo.png" alt="R3T Podcast Logo" width={120} height={120} className="h-16 sm:h-20 w-auto mb-3 sm:mb-4" />
+            <Image src="/r3-logo.png" alt="R3T Podcast Logo" width={120} height={120} className="h-16 sm:h-20 w-auto mb-3 sm:mb-4" />
             <p className="text-sm sm:text-base font-medium text-foreground/90 mb-3 sm:mb-4 leading-relaxed">Roots, Routes & Real Talk</p>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               Navigating work, life, and everything in between with humor, honesty, and music.
