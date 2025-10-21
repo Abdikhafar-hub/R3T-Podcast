@@ -182,7 +182,7 @@ export default function Contact() {
                     href="mailto:hello@r3tpodcast.com"
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    info@routesroutesrealtalk.com
+                    routesroutesrealtalk@gmail.com
                   </a>
                 </div>
               </div>

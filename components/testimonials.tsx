@@ -13,12 +13,7 @@ const testimonials = [
     avatar: "/producer.jpg",
   },
   
-  {
-    quote: "Finally, a podcast that tackles work-life balance without the corporate BS. Raw, honest, and refreshing.",
-    name: "Jane Doe",
-    role: "Entrepreneur",
-    avatar: "/professional-woman-portrait.png",
-  },
+  
   
 ]
 

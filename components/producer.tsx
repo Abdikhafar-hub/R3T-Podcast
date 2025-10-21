@@ -30,7 +30,7 @@ export default function Producer() {
             <div className="md:col-span-2">
               <div className="relative overflow-hidden rounded-lg aspect-square">
                 <img
-                  src="/producer.jpg"
+                  src="/nelly.jpg"
                   alt="Nil Oztas"
                   className="w-full h-full object-cover"
                 />
