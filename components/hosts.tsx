@@ -11,7 +11,7 @@ export default function Hosts() {
   const hosts = [
     {
       name: "Serufusa Sekidde",
-      image: "/serufusa-headshot.jpeg",
+      image: "/podcast .jpeg",
       bio: "Serufusa is a connector, musician, and creative thinker who has always believed that sound and story are inseparable. He's worked across global health, leadership, and partnerships, but what excites him most is the music and humour that carry us through life's detours. On R3T, he brings rhythm, honesty, and the courage to dive into both the wins and the woes.",
     },
     {

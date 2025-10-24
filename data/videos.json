@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "title": "Behind the Mic: Episode Highlights",
+    "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-13%20at%207.56.26%20PM-Rp1pcyHKdGbNdgZ4ROkfyBH9pzGBiF.mp4",
+    "uploadDate": "2024-01-15",
+    "featured": true
+  },
+  {
+    "id": "2",
+    "title": "The Story Behind R3T",
+    "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-13%20at%207.56.26%20PM%20%282%29-pbW912r7Xc421ZDsmGNO3dtYDFMt74.mp4",
+    "uploadDate": "2024-01-10",
+    "featured": true
+  },
+  {
+    "id": "3",
+    "title": "R3T Podcast Session",
+    "src": "/WhatsApp Video 2025-10-13 at 7.56.26 PM (1).mp4",
+    "uploadDate": "2024-01-05",
+    "featured": true
+  }
+]
