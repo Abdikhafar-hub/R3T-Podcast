@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Upload, Trash2, Plus, Lock, Eye, EyeOff, Edit } from "lucide-react"
+import { Upload, Trash2, Plus, Lock, Eye, EyeOff, Edit, Settings, Save, Image as ImageIcon, Users, MessageSquare, Link, Globe, Menu, Home } from "lucide-react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/confirmation-modal"
 import EditVideoModal from "@/components/edit-video-modal"
@@ -16,6 +16,96 @@ interface Video {
   featured: boolean
 }
 
+interface CMSData {
+  hero: {
+    slides: Array<{
+      id: string
+      image: string
+      title: string
+      subtitle: string
+      cta: string
+      ctaLink: string
+    }>
+  }
+  about: {
+    title: string
+    content: string[]
+    image: string
+    imageAlt: string
+  }
+  hosts: {
+    title: string
+    hosts: Array<{
+      id: string
+      name: string
+      image: string
+      bio: string
+    }>
+  }
+  producer: {
+    title: string
+    name: string
+    image: string
+    bio: string
+  }
+  testimonials: {
+    title: string
+    subtitle: string
+    testimonials: Array<{
+      id: string
+      quote: string
+      name: string
+      role: string
+      avatar: string
+    }>
+  }
+  partners: {
+    title: string
+    subtitle: string
+    platforms: Array<{
+      name: string
+      icon: string
+      color: string
+      url: string
+    }>
+  }
+  contact: {
+    title: string
+    subtitle: string
+    email: string
+    socialLinks: Array<{
+      name: string
+      icon: string
+      href: string
+      color: string
+    }>
+  }
+  footer: {
+    logo: string
+    description: string
+    email: string
+    location: string
+    quickLinks: Array<{
+      name: string
+      href: string
+    }>
+    socialLinks: Array<{
+      name: string
+      icon: string
+      href: string
+    }>
+  }
+  navbar: {
+    logo: string
+    navLinks: Array<{
+      href: string
+      label: string
+    }>
+    ctaText: string
+    ctaLink: string
+  }
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState("")
@@ -26,6 +116,12 @@ export default function AdminPage() {
   const [isPublished, setIsPublished] = useState(true)
   const [videoTitle, setVideoTitle] = useState("")
   const [videoDescription, setVideoDescription] = useState("")
+  
+  // CMS states
+  const [activeTab, setActiveTab] = useState<'videos' | 'cms'>('videos')
+  const [cmsData, setCmsData] = useState<CMSData | null>(null)
+  const [cmsLoading, setCmsLoading] = useState(false)
+  const [activeCmsSection, setActiveCmsSection] = useState<string>('hero')
   
   // Modal states
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; video: Video | null }>({
@@ -51,8 +147,46 @@ export default function AdminPage() {
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true)
       fetchVideos()
+      fetchCmsData()
     } else {
       toast.error("Incorrect password")
+    }
+  }
+
+  const fetchCmsData = async () => {
+    setCmsLoading(true)
+    try {
+      const response = await fetch('/api/cms')
+      const data = await response.json()
+      setCmsData(data)
+    } catch (error) {
+      toast.error("Failed to fetch CMS data")
+    } finally {
+      setCmsLoading(false)
+    }
+  }
+
+  const updateCmsSection = async (section: string, data: any) => {
+    setCmsLoading(true)
+    try {
+      const response = await fetch('/api/cms', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ section, data }),
+      })
+
+      if (response.ok) {
+        toast.success(`${section} section updated successfully!`)
+        fetchCmsData()
+      } else {
+        toast.error("Failed to update section")
+      }
+    } catch (error) {
+      toast.error("Update failed")
+    } finally {
+      setCmsLoading(false)
     }
   }
 
@@ -296,8 +430,8 @@ export default function AdminPage() {
         >
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold">Video Management</h1>
-              <p className="text-muted-foreground">Upload and manage featured videos</p>
+              <h1 className="text-3xl font-bold">Admin Panel</h1>
+              <p className="text-muted-foreground">Manage videos and website content</p>
             </div>
             <button
               onClick={() => setIsAuthenticated(false)}
@@ -307,8 +441,37 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {/* Upload Section */}
-          <div className="mb-8 p-6 border-2 border-dashed border-border rounded-lg">
+          {/* Tab Navigation */}
+          <div className="flex space-x-1 mb-8 bg-muted/30 p-1 rounded-lg">
+            <button
+              onClick={() => setActiveTab('videos')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                activeTab === 'videos'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              Video Management
+            </button>
+            <button
+              onClick={() => setActiveTab('cms')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                activeTab === 'cms'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              Content Management
+            </button>
+          </div>
+
+          {/* Video Management Tab */}
+          {activeTab === 'videos' && (
+            <>
+              {/* Upload Section */}
+              <div className="mb-8 p-6 border-2 border-dashed border-border rounded-lg">
             <div className="text-center">
               <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">Upload New Video</h3>
@@ -501,6 +664,115 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+            </>
+          )}
+
+          {/* CMS Tab */}
+          {activeTab === 'cms' && (
+            <div className="space-y-8">
+              {cmsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-muted-foreground mt-2">Loading CMS data...</p>
+                </div>
+              ) : cmsData ? (
+                <>
+                  {/* CMS Section Navigation */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {[
+                      { id: 'hero', label: 'Hero', icon: Home },
+                      { id: 'about', label: 'About', icon: ImageIcon },
+                      { id: 'hosts', label: 'Hosts', icon: Users },
+                      { id: 'producer', label: 'Producer', icon: Users },
+                      { id: 'testimonials', label: 'Testimonials', icon: MessageSquare },
+                      { id: 'partners', label: 'Partners', icon: Link },
+                      { id: 'contact', label: 'Contact', icon: Globe },
+                      { id: 'footer', label: 'Footer', icon: Menu },
+                      { id: 'navbar', label: 'Navigation', icon: Menu }
+                    ].map((section) => {
+                      const Icon = section.icon
+                      return (
+                        <button
+                          key={section.id}
+                          onClick={() => setActiveCmsSection(section.id)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                            activeCmsSection === section.id
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {section.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* CMS Section Content */}
+                  <div className="bg-muted/30 rounded-lg p-6">
+                    {activeCmsSection === 'hero' && (
+                      <HeroSectionEditor 
+                        data={cmsData.hero} 
+                        onUpdate={(data) => updateCmsSection('hero', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'about' && (
+                      <AboutSectionEditor 
+                        data={cmsData.about} 
+                        onUpdate={(data) => updateCmsSection('about', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'hosts' && (
+                      <HostsSectionEditor 
+                        data={cmsData.hosts} 
+                        onUpdate={(data) => updateCmsSection('hosts', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'producer' && (
+                      <ProducerSectionEditor 
+                        data={cmsData.producer} 
+                        onUpdate={(data) => updateCmsSection('producer', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'testimonials' && (
+                      <TestimonialsSectionEditor 
+                        data={cmsData.testimonials} 
+                        onUpdate={(data) => updateCmsSection('testimonials', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'partners' && (
+                      <PartnersSectionEditor 
+                        data={cmsData.partners} 
+                        onUpdate={(data) => updateCmsSection('partners', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'contact' && (
+                      <ContactSectionEditor 
+                        data={cmsData.contact} 
+                        onUpdate={(data) => updateCmsSection('contact', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'footer' && (
+                      <FooterSectionEditor 
+                        data={cmsData.footer} 
+                        onUpdate={(data) => updateCmsSection('footer', data)} 
+                      />
+                    )}
+                    {activeCmsSection === 'navbar' && (
+                      <NavbarSectionEditor 
+                        data={cmsData.navbar} 
+                        onUpdate={(data) => updateCmsSection('navbar', data)} 
+                      />
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Failed to load CMS data
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
       </div>
 
@@ -538,6 +810,1098 @@ export default function AdminPage() {
           onSave={handleSaveVideo}
         />
       )}
+    </div>
+  )
+}
+
+// Section Editor Components
+function HeroSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [slides, setSlides] = useState(data.slides || [])
+
+  const addSlide = () => {
+    const newSlide = {
+      id: `slide-${Date.now()}`,
+      image: '',
+      title: '',
+      subtitle: '',
+      cta: '',
+      ctaLink: ''
+    }
+    setSlides([...slides, newSlide])
+  }
+
+  const updateSlide = (index: number, field: string, value: string) => {
+    const updatedSlides = [...slides]
+    updatedSlides[index] = { ...updatedSlides[index], [field]: value }
+    setSlides(updatedSlides)
+  }
+
+  const removeSlide = (index: number) => {
+    setSlides(slides.filter((_: any, i: number) => i !== index))
+  }
+
+  const saveChanges = () => {
+    onUpdate({ slides })
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Hero Section - Slides</h3>
+        <div className="flex gap-2">
+          <button
+            onClick={addSlide}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Add Slide
+          </button>
+          <button
+            onClick={saveChanges}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {slides.map((slide: any, index: number) => (
+          <div key={slide.id} className="border border-border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Slide {index + 1}</h4>
+              <button
+                onClick={() => removeSlide(index)}
+                className="text-red-600 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Image URL</label>
+                <input
+                  type="text"
+                  value={slide.image}
+                  onChange={(e) => updateSlide(index, 'image', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                  placeholder="/path/to/image.jpg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Title</label>
+                <input
+                  type="text"
+                  value={slide.title}
+                  onChange={(e) => updateSlide(index, 'title', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                  placeholder="Slide title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Subtitle</label>
+                <input
+                  type="text"
+                  value={slide.subtitle}
+                  onChange={(e) => updateSlide(index, 'subtitle', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                  placeholder="Slide subtitle"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">CTA Text</label>
+                <input
+                  type="text"
+                  value={slide.cta}
+                  onChange={(e) => updateSlide(index, 'cta', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                  placeholder="Button text"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">CTA Link</label>
+                <input
+                  type="text"
+                  value={slide.ctaLink}
+                  onChange={(e) => updateSlide(index, 'ctaLink', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                  placeholder="#videos or /link"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateField = (field: string, value: any) => {
+    setFormData({ ...formData, [field]: value })
+  }
+
+  const updateContent = (index: number, value: string) => {
+    const newContent = [...formData.content]
+    newContent[index] = value
+    setFormData({ ...formData, content: newContent })
+  }
+
+  const addContent = () => {
+    setFormData({ ...formData, content: [...formData.content, ''] })
+  }
+
+  const removeContent = (index: number) => {
+    const newContent = formData.content.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, content: newContent })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">About Section</h3>
+        <button
+          onClick={saveChanges}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Save Changes
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => updateField('title', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Content Paragraphs</label>
+          {formData.content.map((paragraph: string, index: number) => (
+            <div key={index} className="flex gap-2 mb-2">
+              <textarea
+                value={paragraph}
+                onChange={(e) => updateContent(index, e.target.value)}
+                className="flex-1 px-3 py-2 border border-border rounded-lg"
+                rows={3}
+              />
+              <button
+                onClick={() => removeContent(index)}
+                className="px-3 py-2 text-red-600 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={addContent}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Add Paragraph
+          </button>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Image URL</label>
+          <input
+            type="text"
+            value={formData.image}
+            onChange={(e) => updateField('image', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+            placeholder="/path/to/image.jpg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Image Alt Text</label>
+          <input
+            type="text"
+            value={formData.imageAlt}
+            onChange={(e) => updateField('imageAlt', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+            placeholder="Description of the image"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HostsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateHost = (index: number, field: string, value: string) => {
+    const newHosts = [...formData.hosts]
+    newHosts[index] = { ...newHosts[index], [field]: value }
+    setFormData({ ...formData, hosts: newHosts })
+  }
+
+  const addHost = () => {
+    const newHost = {
+      id: `host-${Date.now()}`,
+      name: '',
+      image: '',
+      bio: ''
+    }
+    setFormData({ ...formData, hosts: [...formData.hosts, newHost] })
+  }
+
+  const removeHost = (index: number) => {
+    const newHosts = formData.hosts.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, hosts: newHosts })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Hosts Section</h3>
+        <div className="flex gap-2">
+          <button
+            onClick={addHost}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Add Host
+          </button>
+          <button
+            onClick={saveChanges}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">Section Title</label>
+        <input
+          type="text"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          className="w-full px-3 py-2 border border-border rounded-lg"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {formData.hosts.map((host: any, index: number) => (
+          <div key={host.id} className="border border-border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Host {index + 1}</h4>
+              <button
+                onClick={() => removeHost(index)}
+                className="text-red-600 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Name</label>
+                <input
+                  type="text"
+                  value={host.name}
+                  onChange={(e) => updateHost(index, 'name', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Image URL</label>
+                <input
+                  type="text"
+                  value={host.image}
+                  onChange={(e) => updateHost(index, 'image', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">Bio</label>
+                <textarea
+                  value={host.bio}
+                  onChange={(e) => updateHost(index, 'bio', e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg"
+                  rows={4}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ProducerSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateField = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Producer Section</h3>
+        <button
+          onClick={saveChanges}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Save Changes
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => updateField('title', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => updateField('name', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Image URL</label>
+          <input
+            type="text"
+            value={formData.image}
+            onChange={(e) => updateField('image', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Bio</label>
+          <textarea
+            value={formData.bio}
+            onChange={(e) => updateField('bio', e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+            rows={6}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TestimonialsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateTestimonial = (index: number, field: string, value: string) => {
+    const newTestimonials = [...formData.testimonials]
+    newTestimonials[index] = { ...newTestimonials[index], [field]: value }
+    setFormData({ ...formData, testimonials: newTestimonials })
+  }
+
+  const addTestimonial = () => {
+    const newTestimonial = {
+      id: `testimonial-${Date.now()}`,
+      quote: '',
+      name: '',
+      role: '',
+      avatar: ''
+    }
+    setFormData({ ...formData, testimonials: [...formData.testimonials, newTestimonial] })
+  }
+
+  const removeTestimonial = (index: number) => {
+    const newTestimonials = formData.testimonials.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, testimonials: newTestimonials })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Testimonials Section</h3>
+        <div className="flex gap-2">
+          <button
+            onClick={addTestimonial}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Add Testimonial
+          </button>
+          <button
+            onClick={saveChanges}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Subtitle</label>
+          <input
+            type="text"
+            value={formData.subtitle}
+            onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div className="space-y-4">
+          {formData.testimonials.map((testimonial: any, index: number) => (
+            <div key={testimonial.id} className="border border-border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Testimonial {index + 1}</h4>
+                <button
+                  onClick={() => removeTestimonial(index)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Quote</label>
+                  <textarea
+                    value={testimonial.quote}
+                    onChange={(e) => updateTestimonial(index, 'quote', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <input
+                    type="text"
+                    value={testimonial.name}
+                    onChange={(e) => updateTestimonial(index, 'name', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Role</label>
+                  <input
+                    type="text"
+                    value={testimonial.role}
+                    onChange={(e) => updateTestimonial(index, 'role', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Avatar URL</label>
+                  <input
+                    type="text"
+                    value={testimonial.avatar}
+                    onChange={(e) => updateTestimonial(index, 'avatar', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updatePlatform = (index: number, field: string, value: string) => {
+    const newPlatforms = [...formData.platforms]
+    newPlatforms[index] = { ...newPlatforms[index], [field]: value }
+    setFormData({ ...formData, platforms: newPlatforms })
+  }
+
+  const addPlatform = () => {
+    const newPlatform = {
+      name: '',
+      icon: '',
+      color: '#000000',
+      url: ''
+    }
+    setFormData({ ...formData, platforms: [...formData.platforms, newPlatform] })
+  }
+
+  const removePlatform = (index: number) => {
+    const newPlatforms = formData.platforms.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, platforms: newPlatforms })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Partners Section</h3>
+        <div className="flex gap-2">
+          <button
+            onClick={addPlatform}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Add Platform
+          </button>
+          <button
+            onClick={saveChanges}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Subtitle</label>
+          <input
+            type="text"
+            value={formData.subtitle}
+            onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div className="space-y-4">
+          {formData.platforms.map((platform: any, index: number) => (
+            <div key={index} className="border border-border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Platform {index + 1}</h4>
+                <button
+                  onClick={() => removePlatform(index)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <input
+                    type="text"
+                    value={platform.name}
+                    onChange={(e) => updatePlatform(index, 'name', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Icon (Lucide icon name)</label>
+                  <input
+                    type="text"
+                    value={platform.icon}
+                    onChange={(e) => updatePlatform(index, 'icon', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    placeholder="Music, Podcast, etc."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Color</label>
+                  <input
+                    type="color"
+                    value={platform.color}
+                    onChange={(e) => updatePlatform(index, 'color', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">URL</label>
+                  <input
+                    type="text"
+                    value={platform.url}
+                    onChange={(e) => updatePlatform(index, 'url', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateSocialLink = (index: number, field: string, value: string) => {
+    const newSocialLinks = [...formData.socialLinks]
+    newSocialLinks[index] = { ...newSocialLinks[index], [field]: value }
+    setFormData({ ...formData, socialLinks: newSocialLinks })
+  }
+
+  const addSocialLink = () => {
+    const newSocialLink = {
+      name: '',
+      icon: '',
+      href: '',
+      color: '#000000'
+    }
+    setFormData({ ...formData, socialLinks: [...formData.socialLinks, newSocialLink] })
+  }
+
+  const removeSocialLink = (index: number) => {
+    const newSocialLinks = formData.socialLinks.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, socialLinks: newSocialLinks })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Contact Section</h3>
+        <button
+          onClick={saveChanges}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Save Changes
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Section Subtitle</label>
+          <input
+            type="text"
+            value={formData.subtitle}
+            onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Email</label>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">Social Links</label>
+            <button
+              onClick={addSocialLink}
+              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+            >
+              Add Link
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            {formData.socialLinks.map((link: any, index: number) => (
+              <div key={index} className="border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-medium">Social Link {index + 1}</h4>
+                  <button
+                    onClick={() => removeSocialLink(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Name</label>
+                    <input
+                      type="text"
+                      value={link.name}
+                      onChange={(e) => updateSocialLink(index, 'name', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Icon (Lucide icon name)</label>
+                    <input
+                      type="text"
+                      value={link.icon}
+                      onChange={(e) => updateSocialLink(index, 'icon', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      placeholder="Instagram, Twitter, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">URL</label>
+                    <input
+                      type="text"
+                      value={link.href}
+                      onChange={(e) => updateSocialLink(index, 'href', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Color</label>
+                    <input
+                      type="color"
+                      value={link.color}
+                      onChange={(e) => updateSocialLink(index, 'color', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateQuickLink = (index: number, field: string, value: string) => {
+    const newQuickLinks = [...formData.quickLinks]
+    newQuickLinks[index] = { ...newQuickLinks[index], [field]: value }
+    setFormData({ ...formData, quickLinks: newQuickLinks })
+  }
+
+  const updateSocialLink = (index: number, field: string, value: string) => {
+    const newSocialLinks = [...formData.socialLinks]
+    newSocialLinks[index] = { ...newSocialLinks[index], [field]: value }
+    setFormData({ ...formData, socialLinks: newSocialLinks })
+  }
+
+  const addQuickLink = () => {
+    const newQuickLink = { name: '', href: '' }
+    setFormData({ ...formData, quickLinks: [...formData.quickLinks, newQuickLink] })
+  }
+
+  const removeQuickLink = (index: number) => {
+    const newQuickLinks = formData.quickLinks.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, quickLinks: newQuickLinks })
+  }
+
+  const addSocialLink = () => {
+    const newSocialLink = { name: '', icon: '', href: '' }
+    setFormData({ ...formData, socialLinks: [...formData.socialLinks, newSocialLink] })
+  }
+
+  const removeSocialLink = (index: number) => {
+    const newSocialLinks = formData.socialLinks.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, socialLinks: newSocialLinks })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Footer Section</h3>
+        <button
+          onClick={saveChanges}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Save Changes
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Logo URL</label>
+            <input
+              type="text"
+              value={formData.logo}
+              onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+              className="w-full px-3 py-2 border border-border rounded-lg"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-3 py-2 border border-border rounded-lg"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Description</label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+            rows={3}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Location</label>
+          <input
+            type="text"
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">Quick Links</label>
+            <button
+              onClick={addQuickLink}
+              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+            >
+              Add Link
+            </button>
+          </div>
+          
+          <div className="space-y-2">
+            {formData.quickLinks.map((link: any, index: number) => (
+              <div key={index} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={link.name}
+                  onChange={(e) => updateQuickLink(index, 'name', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Link name"
+                />
+                <input
+                  type="text"
+                  value={link.href}
+                  onChange={(e) => updateQuickLink(index, 'href', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Link URL"
+                />
+                <button
+                  onClick={() => removeQuickLink(index)}
+                  className="px-3 py-2 text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">Social Links</label>
+            <button
+              onClick={addSocialLink}
+              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+            >
+              Add Link
+            </button>
+          </div>
+          
+          <div className="space-y-2">
+            {formData.socialLinks.map((link: any, index: number) => (
+              <div key={index} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={link.name}
+                  onChange={(e) => updateSocialLink(index, 'name', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Social platform name"
+                />
+                <input
+                  type="text"
+                  value={link.icon}
+                  onChange={(e) => updateSocialLink(index, 'icon', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Icon name"
+                />
+                <input
+                  type="text"
+                  value={link.href}
+                  onChange={(e) => updateSocialLink(index, 'href', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Social URL"
+                />
+                <button
+                  onClick={() => removeSocialLink(index)}
+                  className="px-3 py-2 text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NavbarSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
+  const [formData, setFormData] = useState(data)
+
+  const updateNavLink = (index: number, field: string, value: string) => {
+    const newNavLinks = [...formData.navLinks]
+    newNavLinks[index] = { ...newNavLinks[index], [field]: value }
+    setFormData({ ...formData, navLinks: newNavLinks })
+  }
+
+  const addNavLink = () => {
+    const newNavLink = { href: '', label: '' }
+    setFormData({ ...formData, navLinks: [...formData.navLinks, newNavLink] })
+  }
+
+  const removeNavLink = (index: number) => {
+    const newNavLinks = formData.navLinks.filter((_: any, i: number) => i !== index)
+    setFormData({ ...formData, navLinks: newNavLinks })
+  }
+
+  const saveChanges = () => {
+    onUpdate(formData)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Navigation Section</h3>
+        <button
+          onClick={saveChanges}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Save Changes
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Logo URL</label>
+          <input
+            type="text"
+            value={formData.logo}
+            onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">CTA Text</label>
+          <input
+            type="text"
+            value={formData.ctaText}
+            onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">CTA Link</label>
+          <input
+            type="text"
+            value={formData.ctaLink}
+            onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+            className="w-full px-3 py-2 border border-border rounded-lg"
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">Navigation Links</label>
+            <button
+              onClick={addNavLink}
+              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+            >
+              Add Link
+            </button>
+          </div>
+          
+          <div className="space-y-2">
+            {formData.navLinks.map((link: any, index: number) => (
+              <div key={index} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={link.href}
+                  onChange={(e) => updateNavLink(index, 'href', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Link URL (#about, /page, etc.)"
+                />
+                <input
+                  type="text"
+                  value={link.label}
+                  onChange={(e) => updateNavLink(index, 'label', e.target.value)}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  placeholder="Link label"
+                />
+                <button
+                  onClick={() => removeNavLink(index)}
+                  className="px-3 py-2 text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

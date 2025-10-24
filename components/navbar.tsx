@@ -50,12 +50,7 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-            >
-              Admin
-            </Link>
+            
             <Link
               href="#videos"
               className="px-6 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-all hover:scale-105"
@@ -93,13 +88,7 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
-            >
-              Admin
-            </Link>
+            
             <Link
               href="#videos"
               onClick={() => setMobileMenuOpen(false)}
