@@ -278,7 +278,7 @@ export default function AdminPage() {
               type="submit"
               className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
-              Access Admin Panel
+              Access Admin Panel.
             </button>
           </form>
         </motion.div>
