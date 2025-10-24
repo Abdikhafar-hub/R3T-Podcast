@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Upload, Trash2, Plus, Lock, Eye, EyeOff } from "lucide-react"
+import { Upload, Trash2, Plus, Lock, Eye, EyeOff, Edit } from "lucide-react"
 import { toast } from "sonner"
 import ConfirmationModal from "@/components/confirmation-modal"
+import EditVideoModal from "@/components/edit-video-modal"
 
 interface Video {
   id: string
   title: string
+  description?: string
   src: string
   uploadDate: string
   featured: boolean
@@ -22,6 +24,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [isPublished, setIsPublished] = useState(true)
+  const [videoTitle, setVideoTitle] = useState("")
+  const [videoDescription, setVideoDescription] = useState("")
   
   // Modal states
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; video: Video | null }>({
@@ -32,6 +36,10 @@ export default function AdminPage() {
     isOpen: false,
     video: null,
     newStatus: false
+  })
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; video: Video | null }>({
+    isOpen: false,
+    video: null
   })
   const [isProcessing, setIsProcessing] = useState(false)
   
@@ -65,10 +73,25 @@ export default function AdminPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Check file size before upload (200MB limit)
+    const maxSize = 200 * 1024 * 1024 // 200MB
+    if (file.size > maxSize) {
+      toast.error(`File too large! Maximum size is 200MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your video or use a smaller file.`)
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('video/')) {
+      toast.error("Please select a video file")
+      return
+    }
+
     setUploading(true)
     try {
       const formData = new FormData()
       formData.append('file', file)
+
+      toast.info(`Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)...`)
 
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
@@ -85,8 +108,10 @@ export default function AdminPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+            title: videoTitle || file.name.replace(/\.[^/.]+$/, ""), // Use custom title or filename
+            description: videoDescription || "", // Use custom description
             src: uploadData.url,
+            public_id: uploadData.public_id, // Store Cloudinary public_id
             featured: isPublished
           }),
         })
@@ -94,14 +119,19 @@ export default function AdminPage() {
         if (videoResponse.ok) {
           toast.success("Video uploaded successfully!")
           fetchVideos()
+          // Clear form
+          setVideoTitle("")
+          setVideoDescription("")
+          setIsPublished(true)
         } else {
           toast.error("Failed to add video to database")
         }
       } else {
-        toast.error("Failed to upload file")
+        toast.error(uploadData.error || "Failed to upload file")
       }
     } catch (error) {
-      toast.error("Upload failed")
+      console.error('Upload error:', error)
+      toast.error("Upload failed. Please try again.")
     } finally {
       setUploading(false)
     }
@@ -145,11 +175,48 @@ export default function AdminPage() {
     }
   }
 
+  const handleEditVideo = (video: Video) => {
+    setEditModal({
+      isOpen: true,
+      video
+    })
+  }
+
   const handleDeleteVideo = (video: Video) => {
     setDeleteModal({
       isOpen: true,
       video
     })
+  }
+
+  const handleSaveVideo = async (updatedVideo: Video) => {
+    setIsProcessing(true)
+    try {
+      const response = await fetch('/api/videos', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: updatedVideo.id,
+          title: updatedVideo.title,
+          description: updatedVideo.description,
+          featured: updatedVideo.featured
+        }),
+      })
+
+      if (response.ok) {
+        toast.success("Video updated successfully!")
+        fetchVideos()
+        setEditModal({ isOpen: false, video: null })
+      } else {
+        toast.error("Failed to update video")
+      }
+    } catch (error) {
+      toast.error("Update failed")
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const confirmDeleteVideo = async () => {
@@ -248,7 +315,49 @@ export default function AdminPage() {
               <p className="text-muted-foreground mb-4">
                 Select a video file to add to the featured videos section
               </p>
+              <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>File Requirements:</strong>
+                </p>
+                <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                  <li>• Maximum file size: <strong>100MB</strong></li>
+                  <li>• Supported formats: MP4, MOV, AVI, MKV, etc.</li>
+                  <li>• Videos will be automatically optimized for web</li>
+                  <li>• For larger files, please compress your video first</li>
+                </ul>
+              </div>
               
+              {/* Video Details */}
+              <div className="mb-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Video Title
+                  </label>
+                  <input
+                    type="text"
+                    value={videoTitle}
+                    onChange={(e) => setVideoTitle(e.target.value)}
+                    placeholder="Enter a descriptive title for your video"
+                    className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
+                    disabled={uploading}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Video Description (Optional)
+                  </label>
+                  <textarea
+                    value={videoDescription}
+                    onChange={(e) => setVideoDescription(e.target.value)}
+                    placeholder="Add a description of what this video is about..."
+                    rows={3}
+                    className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background resize-none"
+                    disabled={uploading}
+                  />
+                </div>
+              </div>
+
               {/* Draft/Published Toggle */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-foreground mb-3">
@@ -341,7 +450,12 @@ export default function AdminPage() {
                   >
                     <div className="flex-1">
                       <h4 className="font-semibold">{video.title}</h4>
-                      <p className="text-sm text-muted-foreground">
+                      {video.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {video.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-muted-foreground mt-2">
                         Uploaded: {new Date(video.uploadDate).toLocaleDateString()}
                       </p>
                       <p className="text-xs text-muted-foreground truncate max-w-md">
@@ -356,6 +470,13 @@ export default function AdminPage() {
                       }`}>
                         {video.featured ? 'Published' : 'Draft'}
                       </span>
+                      <button
+                        onClick={() => handleEditVideo(video)}
+                        className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg transition-colors"
+                        title="Edit video details"
+                      >
+                        <Edit size={16} />
+                      </button>
                       <button
                         onClick={() => handleToggleStatus(video, !video.featured)}
                         className={`p-2 rounded-lg transition-colors ${
@@ -408,6 +529,15 @@ export default function AdminPage() {
         type={statusModal.newStatus ? "success" : "warning"}
         isLoading={isProcessing}
       />
+
+      {/* Edit Video Modal */}
+      {editModal.isOpen && editModal.video && (
+        <EditVideoModal
+          video={editModal.video}
+          onClose={() => setEditModal({ isOpen: false, video: null })}
+          onSave={handleSaveVideo}
+        />
+      )}
     </div>
   )
 }

@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
+import { v2 as cloudinary } from 'cloudinary'
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 const videosFilePath = path.join(process.cwd(), 'data', 'videos.json')
 
@@ -16,7 +24,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, src, featured = true } = await request.json()
+    const { title, description, src, featured = true, public_id } = await request.json()
     
     // Read current videos
     const videosData = fs.readFileSync(videosFilePath, 'utf8')
@@ -26,7 +34,9 @@ export async function POST(request: NextRequest) {
     const newVideo = {
       id: Date.now().toString(),
       title,
+      description: description || "",
       src,
+      public_id: public_id || null, // Store Cloudinary public_id for deletion
       uploadDate: new Date().toISOString().split('T')[0],
       featured
     }
@@ -44,20 +54,28 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { id, featured } = await request.json()
+    const { id, title, description, featured } = await request.json()
     
-    if (!id || typeof featured !== 'boolean') {
-      return NextResponse.json({ error: 'Video ID and featured status required' }, { status: 400 })
+    if (!id) {
+      return NextResponse.json({ error: 'Video ID required' }, { status: 400 })
     }
     
     // Read current videos
     const videosData = fs.readFileSync(videosFilePath, 'utf8')
     const videos = JSON.parse(videosData)
     
-    // Update video status
-    const updatedVideos = videos.map((video: any) => 
-      video.id === id ? { ...video, featured } : video
-    )
+    // Update video with provided fields
+    const updatedVideos = videos.map((video: any) => {
+      if (video.id === id) {
+        return {
+          ...video,
+          ...(title !== undefined && { title }),
+          ...(description !== undefined && { description }),
+          ...(featured !== undefined && { featured })
+        }
+      }
+      return video
+    })
     
     // Write back to file
     fs.writeFileSync(videosFilePath, JSON.stringify(updatedVideos, null, 2))
@@ -81,7 +99,22 @@ export async function DELETE(request: NextRequest) {
     const videosData = fs.readFileSync(videosFilePath, 'utf8')
     const videos = JSON.parse(videosData)
     
-    // Remove video
+    // Find the video to delete
+    const videoToDelete = videos.find((video: any) => video.id === id)
+    
+    // Delete from Cloudinary if it has a public_id
+    if (videoToDelete && videoToDelete.public_id) {
+      try {
+        await cloudinary.uploader.destroy(videoToDelete.public_id, {
+          resource_type: 'video'
+        })
+      } catch (cloudinaryError) {
+        console.error('Failed to delete from Cloudinary:', cloudinaryError)
+        // Continue with local deletion even if Cloudinary fails
+      }
+    }
+    
+    // Remove video from local data
     const filteredVideos = videos.filter((video: any) => video.id !== id)
     
     // Write back to file

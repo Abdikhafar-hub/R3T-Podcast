@@ -8,6 +8,7 @@ import { Play } from "lucide-react"
 interface Video {
   id: string
   title: string
+  description?: string
   src: string
   uploadDate: string
   featured: boolean
@@ -105,6 +106,11 @@ export default function Videos() {
                   </div>
                 </div>
                 <h3 className="font-serif text-lg font-bold group-hover:text-primary transition-colors">{video.title}</h3>
+                {video.description && (
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                    {video.description}
+                  </p>
+                )}
               </motion.div>
             ))}
           </div>
