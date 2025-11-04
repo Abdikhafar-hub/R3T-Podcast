@@ -10,7 +10,7 @@
         "ctaLink": "#videos"
       },
       {
-        "id": "slide-2", 
+        "id": "slide-2",
         "image": "/roots-waveform.png",
         "title": "Where Stories Take Root",
         "subtitle": "Exploring the origins, journeys, and authentic voices that shape our world.",
@@ -19,7 +19,7 @@
       },
       {
         "id": "slide-3",
-        "image": "/woman-recording.png", 
+        "image": "/woman-recording.png",
         "title": "Real Conversations, Real People",
         "subtitle": "Join us for honest discussions about work, life, and everything in between.",
         "cta": "Meet the Hosts",
@@ -30,11 +30,12 @@
   "about": {
     "title": "About R3T",
     "content": [
-      "Roots, Routes & Real Talk (R3T) is a podcast about navigating work, life, and everything in between; with humour, honesty, and a dose of music. Hosted by Serufusa Sekidde and Hewan Wole, we sit down with people who've taken unexpected turns, faced real challenges, and found their own ways forward.",
+      "Roots, Routes & Real Talk (R3T) is a podcast about navigating work, life, and everything in between; with humour, honesty, and a dose of music. Hosted by Serufusa Sekidde and Hewan Wole, we sit down with people who've taken unexpected turns, faced real challenges, and found their own ways forward. This is a test data",
       "Our conversations aren't polished monologues or corporate pep talks. They're story-driven, playful, and grounded in the things that actually shape us: the roots that anchor us, the routes that change us, and the real talk that connects us.",
-      "Each episode mixes candid stories, a little laughter, and the music or rituals that keep our guests moving. If you're looking for conversations that make you think, nod along, and maybe even see your own journey differently, you'll feel at home here."
+      "Each episode mixes candid stories, a little laughter, and the music or rituals that keep our guests moving. If you're looking for conversations that make you think, nod along, and maybe even see your own journey differently, you'll feel at home here.",
+      "this is a test paragrpagh"
     ],
-    "image": "/podcast-microphone.jpeg",
+    "image": "https://res.cloudinary.com/dznt3k5oo/image/upload/v1762275004/r3t-podcast/images/image_1762275000569.jpg",
     "imageAlt": "Professional podcast microphone setup"
   },
   "hosts": {
@@ -43,21 +44,21 @@
       {
         "id": "host-1",
         "name": "Serufusa Sekidde",
-        "image": "/podcast .jpeg",
-        "bio": "Serufusa is a connector, musician, and creative thinker who has always believed that sound and story are inseparable. He's worked across global health, leadership, and partnerships, but what excites him most is the music and humour that carry us through life's detours. On R3T, he brings rhythm, honesty, and the courage to dive into both the wins and the woes."
+        "image": "https://res.cloudinary.com/dznt3k5oo/image/upload/v1762275067/r3t-podcast/images/image_1762275064142.jpg",
+        "bio": "Serufusa is a connector, musician, and creative thinker who has always believed that sound and story are inseparable. He's worked across global health, leadership, and partnerships, but what excites him most is the music and humour that carry us through life's detours. On R3T, he brings rhythm, honesty, and the courage to dive into both the wins and the woes. testting"
       },
       {
         "id": "host-2",
-        "name": "Hewan Wole", 
+        "name": "Hewan Wole",
         "image": "/hewan-headshot.jpg",
-        "bio": "Hewan is a storyteller at heart with a background in leadership, strategy, and making sense of the human side of work. She's passionate about the conversations that often go unspoken in professional spaces — how we show up, what grounds us, and the messy but meaningful routes we take to grow. With a curious mind and a warm laugh, she brings a thoughtful, reflective energy to R3T."
+        "bio": "Hewan is a storyteller at heart with a background in leadership, strategy, and making sense of the human side of work. She's passionate about the conversations that often go unspoken in professional spaces — how we show up, what grounds us, and the messy but meaningful routes we take to grow. With a curious mind and a warm laugh, she brings a thoughtful, reflective energy to R3T.testing"
       }
     ]
   },
   "producer": {
-    "title": "Meet the Producer",
-    "name": "Nil Oztas",
-    "image": "/nelly.jpg",
+    "title": "Meet the Producer testing",
+    "name": "Nil Oztas testing",
+    "image": "https://res.cloudinary.com/dznt3k5oo/image/upload/v1762275137/r3t-podcast/images/image_1762275135512.jpg",
     "bio": "Nil is an outgoing explorer who thrives on new opportunities and stepping outside of her comfort zone. On a journey of self discovery, she embraces the challenge of trying new things and seeing where curiosity leads! With her open spirit, courage and growing vision for leadership, Nil brings energy, authenticity and fresh perspective to R3T."
   },
   "testimonials": {
@@ -70,6 +71,13 @@
         "name": "Nil Oztas",
         "role": "Producer",
         "avatar": "/producer.jpg"
+      },
+      {
+        "id": "testimonial-1762275434899",
+        "quote": "test",
+        "name": "test",
+        "role": "test",
+        "avatar": "https://res.cloudinary.com/dznt3k5oo/image/upload/v1762275458/r3t-podcast/images/image_1762275455724.jpg"
       }
     ]
   },
@@ -77,12 +85,43 @@
     "title": "Listen Everywhere",
     "subtitle": "Stream R3T on your favorite podcast platform",
     "platforms": [
-      { "name": "Spotify", "icon": "Music", "color": "#1DB954", "url": "#" },
-      { "name": "Apple Podcasts", "icon": "Podcast", "color": "#9333EA", "url": "#" },
-      { "name": "Google Podcasts", "icon": "Radio", "color": "#4285F4", "url": "#" },
-      { "name": "Amazon Music", "icon": "Headphones", "color": "#FF9900", "url": "#" },
-      { "name": "YouTube Music", "icon": "Speaker", "color": "#FF0000", "url": "#" },
-      { "name": "Podcast Addict", "icon": "Mic2", "color": "#F59E0B", "url": "#" }
+      {
+        "name": "Spotify",
+        "icon": "Music",
+        "color": "#1DB954",
+        "url": "https://www.youtube.com/"
+      },
+      {
+        "name": "Apple Podcasts",
+        "icon": "Podcast",
+        "color": "#9333EA",
+        "url": "#"
+      },
+      {
+        "name": "Google Podcasts",
+        "icon": "Radio",
+        "color": "#4285F4",
+        "url": "#"
+      },
+      {
+        "name": "Amazon Music",
+        "icon": "Headphones",
+        "color": "#FF9900",
+        "url": "#"
+      },
+      {
+        "name": "YouTube Music",
+        "icon": "Speaker",
+        "color": "#FF0000",
+        "url": "#"
+      },
+      {
+        "name": "Podcast Addict",
+        "icon": "Mic2",
+        "color": "#F59E0B",
+        "url": "#",
+        "logo": "https://res.cloudinary.com/dznt3k5oo/image/upload/v1762275975/r3t-podcast/images/image_1762275973380.png"
+      }
     ]
   },
   "contact": {
@@ -90,10 +129,37 @@
     "subtitle": "Have a story to share? Want to collaborate? We'd love to hear from you.",
     "email": "routesroutesrealtalk@gmail.com",
     "socialLinks": [
-      { "name": "Instagram", "icon": "Instagram", "href": "#", "color": "#E4405F" },
-      { "name": "Twitter", "icon": "Twitter", "href": "#", "color": "#1DA1F2" },
-      { "name": "YouTube", "icon": "Youtube", "href": "#", "color": "#FF0000" },
-      { "name": "LinkedIn", "icon": "Linkedin", "href": "#", "color": "#0A66C2" }
+      {
+        "name": "Instagram",
+        "icon": "Instagram",
+        "href": "https://chatgpt.com/c/69033446-d4f8-8330-b8dc-b75a4d93fc8e",
+        "color": "#E4405F"
+      },
+      {
+        "name": "Twitter",
+        "icon": "Twitter",
+        "href": "#",
+        "color": "#1DA1F2"
+      },
+      {
+        "name": "YouTube",
+        "icon": "Youtube",
+        "href": "#",
+        "color": "#FF0000"
+      },
+      {
+        "name": "LinkedIn",
+        "icon": "Linkedin",
+        "href": "#",
+        "color": "#0A66C2"
+      },
+      {
+        "name": "discord",
+        "icon": "",
+        "href": "",
+        "color": "#9e1515",
+        "logo": "https://res.cloudinary.com/dznt3k5oo/image/upload/v1762276396/r3t-podcast/images/image_1762276394640.jpg"
+      }
     ]
   },
   "footer": {
@@ -102,26 +168,69 @@
     "email": "routesroutesrealtalk@gmail.com",
     "location": "London, UK",
     "quickLinks": [
-      { "name": "Home", "href": "#" },
-      { "name": "About", "href": "#about" },
-      { "name": "Episodes", "href": "#episodes" },
-      { "name": "Videos", "href": "#videos" },
-      { "name": "Contact", "href": "#contact" }
+      {
+        "name": "Home",
+        "href": "#"
+      },
+      {
+        "name": "About",
+        "href": "#about"
+      },
+      {
+        "name": "Episodes",
+        "href": "#episodes"
+      },
+      {
+        "name": "Videos",
+        "href": "#videos"
+      },
+      {
+        "name": "Contact",
+        "href": "#contact"
+      }
     ],
     "socialLinks": [
-      { "name": "Instagram", "icon": "Instagram", "href": "#" },
-      { "name": "Twitter", "icon": "Twitter", "href": "#" },
-      { "name": "YouTube", "icon": "Youtube", "href": "#" },
-      { "name": "LinkedIn", "icon": "Linkedin", "href": "#" }
+      {
+        "name": "Instagram",
+        "icon": "Instagram",
+        "href": "https://www.youtube.com/watch?v=L4MWKGstaHk&list=RDL4MWKGstaHk&start_radio=1"
+      },
+      {
+        "name": "Twitter",
+        "icon": "Twitter",
+        "href": "#"
+      },
+      {
+        "name": "YouTube",
+        "icon": "Youtube",
+        "href": "#"
+      },
+      {
+        "name": "LinkedIn",
+        "icon": "Linkedin",
+        "href": "#"
+      }
     ]
   },
   "navbar": {
     "logo": "/r3t-logo.png",
     "navLinks": [
-      { "href": "#about", "label": "About" },
-      { "href": "#hosts", "label": "Hosts" },
-      { "href": "#videos", "label": "Videos" },
-      { "href": "#subscribe", "label": "Subscribe" }
+      {
+        "href": "#about",
+        "label": "About"
+      },
+      {
+        "href": "#hosts",
+        "label": "Hosts"
+      },
+      {
+        "href": "#videos",
+        "label": "Videos"
+      },
+      {
+        "href": "#subscribe",
+        "label": "Subscribe"
+      }
     ],
     "ctaText": "Listen Now",
     "ctaLink": "#videos"

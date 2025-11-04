@@ -3,23 +3,52 @@
 import { motion } from "framer-motion"
 import { ArrowUp, Instagram, Twitter, Youtube, Linkedin, Mail } from "lucide-react"
 import Image from "next/image"
+import { useState, useEffect } from "react"
 
-const socialLinks = [
-  { name: "Instagram", icon: Instagram, href: "#" },
-  { name: "Twitter", icon: Twitter, href: "#" },
-  { name: "YouTube", icon: Youtube, href: "#" },
-  { name: "LinkedIn", icon: Linkedin, href: "#" },
-]
-
-const quickLinks = [
-  { name: "Home", href: "#" },
-  { name: "About", href: "#about" },
-  { name: "Episodes", href: "#episodes" },
-  { name: "Videos", href: "#videos" },
-  { name: "Contact", href: "#contact" },
-]
+// Icon mapping
+const iconMap: { [key: string]: any } = {
+  Instagram,
+  Twitter,
+  Youtube,
+  Linkedin,
+}
 
 export default function Footer() {
+  const [footerData, setFooterData] = useState({
+    logo: "/r3t-logo.png",
+    description: "Navigating work, life, and everything in between with humor, honesty, and music.",
+    email: "routesroutesrealtalk@gmail.com",
+    location: "London, UK",
+    quickLinks: [
+      { name: "Home", href: "#" },
+      { name: "About", href: "#about" },
+      { name: "Episodes", href: "#episodes" },
+      { name: "Videos", href: "#videos" },
+      { name: "Contact", href: "#contact" },
+    ],
+    socialLinks: [
+      { name: "Instagram", icon: "Instagram", href: "#" },
+      { name: "Twitter", icon: "Twitter", href: "#" },
+      { name: "YouTube", icon: "Youtube", href: "#" },
+      { name: "LinkedIn", icon: "Linkedin", href: "#" },
+    ]
+  })
+
+  useEffect(() => {
+    const fetchFooterData = async () => {
+      try {
+        const response = await fetch('/api/cms')
+        const data = await response.json()
+        if (data.footer) {
+          setFooterData(data.footer)
+        }
+      } catch (error) {
+        console.error('Failed to fetch footer data:', error)
+      }
+    }
+    fetchFooterData()
+  }, [])
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
@@ -41,10 +70,10 @@ export default function Footer() {
         >
           {/* Logo & Description */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Image src="/r3t-logo.png" alt="R3T Podcast Logo" width={120} height={120} className="h-16 sm:h-20 w-auto mb-3 sm:mb-4" />
+            <Image src={footerData.logo || "/r3t-logo.png"} alt="R3T Podcast Logo" width={120} height={120} className="h-16 sm:h-20 w-auto mb-3 sm:mb-4" />
             <p className="text-sm sm:text-base font-medium text-foreground/90 mb-3 sm:mb-4 leading-relaxed">Roots, Routes & Real Talk</p>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Navigating work, life, and everything in between with humor, honesty, and music.
+              {footerData.description}
             </p>
           </div>
 
@@ -52,7 +81,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-base sm:text-lg mb-4 sm:mb-6 text-foreground">Quick Links</h4>
             <nav className="flex flex-col gap-2 sm:gap-3">
-              {quickLinks.map((link) => (
+              {footerData.quickLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
@@ -72,11 +101,11 @@ export default function Footer() {
             <h4 className="font-semibold text-base sm:text-lg mb-4 sm:mb-6 text-foreground">Get in Touch</h4>
             <div className="flex flex-col gap-3 sm:gap-4">
               <a
-                href="mailto:hello@r3tpodcast.com"
+                href={`mailto:${footerData.email}`}
                 className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-all duration-300 flex items-center gap-2 group"
               >
                 <Mail className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                routesroutesrealtalk@gmail.com
+                {footerData.email}
               </a>
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +122,7 @@ export default function Footer() {
                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                London, UK
+                {footerData.location}
               </p>
             </div>
           </div>
@@ -102,12 +131,12 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-base sm:text-lg mb-4 sm:mb-6 text-foreground">Follow Us</h4>
             <div className="flex gap-2 sm:gap-3">
-              {socialLinks.map((social) => {
-                const Icon = social.icon
+              {footerData.socialLinks.map((social) => {
+                const Icon = iconMap[social.icon] || Instagram
                 return (
                   <motion.a
                     key={social.name}
-                    href={social.href}
+                    href={social.href || "#"}
                     whileHover={{ scale: 1.1, y: -3 }}
                     whileTap={{ scale: 0.95 }}
                     className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-primary hover:border-primary transition-all duration-300 group shadow-lg hover:shadow-primary/20"

@@ -5,7 +5,8 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 
-const slides = [
+// Default slides as fallback
+const defaultSlides = [
   {
     image: "/podcast-studio-hero.png",
     title: "Roots, Routes & Real Talk",
@@ -32,6 +33,26 @@ const slides = [
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+  const [slides, setSlides] = useState(defaultSlides)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const response = await fetch('/api/cms')
+        const data = await response.json()
+        if (data.hero && data.hero.slides) {
+          setSlides(data.hero.slides)
+        }
+      } catch (error) {
+        console.error('Failed to fetch hero data:', error)
+        // Keep default slides on error
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchHeroData()
+  }, [])
 
   useEffect(() => {
     if (!isHovered) {
@@ -48,6 +69,14 @@ export default function Hero() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+  }
+
+  if (loading) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </section>
+    )
   }
 
   return (

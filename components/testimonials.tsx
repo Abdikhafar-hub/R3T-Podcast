@@ -4,30 +4,48 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
-const testimonials = [
-  {
-    quote:
-      "R3T is the podcast I didn't know I needed. Every episode feels like catching up with friends who actually get it.",
-    name: "Nil Oztas",
-    role: "Producer",
-    avatar: "/producer.jpg",
-  },
-  
-  
-  
-]
-
 export default function Testimonials() {
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [testimonialsData, setTestimonialsData] = useState({
+    title: "Listener Voices",
+    subtitle: "What our community is saying about R3T",
+    testimonials: [
+      {
+        id: "testimonial-1",
+        quote:
+          "R3T is the podcast I didn't know I needed. Every episode feels like catching up with friends who actually get it.",
+        name: "Nil Oztas",
+        role: "Producer",
+        avatar: "/producer.jpg",
+      },
+    ]
+  })
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setDirection(1)
-      setCurrent((prev) => (prev + 1) % testimonials.length)
-    }, 6000)
-    return () => clearInterval(timer)
+    const fetchTestimonialsData = async () => {
+      try {
+        const response = await fetch('/api/cms')
+        const data = await response.json()
+        if (data.testimonials) {
+          setTestimonialsData(data.testimonials)
+        }
+      } catch (error) {
+        console.error('Failed to fetch testimonials data:', error)
+      }
+    }
+    fetchTestimonialsData()
   }, [])
+
+  useEffect(() => {
+    if (testimonialsData.testimonials.length > 0) {
+      const timer = setInterval(() => {
+        setDirection(1)
+        setCurrent((prev) => (prev + 1) % testimonialsData.testimonials.length)
+      }, 6000)
+      return () => clearInterval(timer)
+    }
+  }, [testimonialsData.testimonials.length])
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -50,9 +68,9 @@ export default function Testimonials() {
     setDirection(newDirection)
     setCurrent((prev) => {
       if (newDirection === 1) {
-        return (prev + 1) % testimonials.length
+        return (prev + 1) % testimonialsData.testimonials.length
       }
-      return prev === 0 ? testimonials.length - 1 : prev - 1
+      return prev === 0 ? testimonialsData.testimonials.length - 1 : prev - 1
     })
   }
 
@@ -78,87 +96,100 @@ export default function Testimonials() {
           className="text-center mb-16"
         >
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl mb-4">
-            Listener <span className="text-primary">Voices</span>
+            {(() => {
+              const words = testimonialsData.title.split(' ')
+              if (words.length >= 2) {
+                return (
+                  <>
+                    {words.slice(0, -1).join(' ')} <span className="text-primary">{words.slice(-1)[0]}</span>
+                  </>
+                )
+              } else {
+                return <span className="text-primary">{testimonialsData.title}</span>
+              }
+            })()}
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">What our community is saying about R3T</p>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{testimonialsData.subtitle}</p>
         </motion.div>
 
-        <div className="max-w-4xl mx-auto relative">
-          {/* Testimonial carousel */}
-          <div className="relative h-[400px] md:h-[300px] flex items-center justify-center">
-            <AnimatePresence initial={false} custom={direction}>
-              <motion.div
-                key={current}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 },
-                }}
-                className="absolute w-full"
-              >
-                <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-8 md:p-12">
-                  <div className="flex flex-col items-center text-center">
-                    <motion.img
-                      src={testimonials[current].avatar}
-                      alt={testimonials[current].name}
-                      className="w-16 h-16 rounded-full mb-6 object-cover"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: "spring" }}
-                    />
-                    <p className="text-xl md:text-2xl font-light mb-6 leading-relaxed">
-                      "{testimonials[current].quote}"
-                    </p>
-                    <div>
-                      <p className="font-semibold text-lg">{testimonials[current].name}</p>
-                      <p className="text-muted-foreground">{testimonials[current].role}</p>
+        {testimonialsData.testimonials.length > 0 && (
+          <div className="max-w-4xl mx-auto relative">
+            {/* Testimonial carousel */}
+            <div className="relative h-[400px] md:h-[300px] flex items-center justify-center">
+              <AnimatePresence initial={false} custom={direction}>
+                <motion.div
+                  key={current}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 },
+                  }}
+                  className="absolute w-full"
+                >
+                  <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-8 md:p-12">
+                    <div className="flex flex-col items-center text-center">
+                      <motion.img
+                        src={testimonialsData.testimonials[current].avatar}
+                        alt={testimonialsData.testimonials[current].name}
+                        className="w-16 h-16 rounded-full mb-6 object-cover"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.2, type: "spring" }}
+                      />
+                      <p className="text-xl md:text-2xl font-light mb-6 leading-relaxed">
+                        "{testimonialsData.testimonials[current].quote}"
+                      </p>
+                      <div>
+                        <p className="font-semibold text-lg">{testimonialsData.testimonials[current].name}</p>
+                        <p className="text-muted-foreground">{testimonialsData.testimonials[current].role}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Navigation buttons */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <button
-              onClick={() => paginate(-1)}
-              className="p-3 rounded-full bg-card/50 border border-border hover:bg-primary hover:border-primary transition-colors group"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="w-5 h-5 group-hover:text-primary-foreground transition-colors" />
-            </button>
-
-            {/* Dots indicator */}
-            <div className="flex gap-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setDirection(index > current ? 1 : -1)
-                    setCurrent(index)
-                  }}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === current ? "bg-primary w-8" : "bg-muted-foreground/30"
-                  }`}
-                  aria-label={`Go to testimonial ${index + 1}`}
-                />
-              ))}
+                </motion.div>
+              </AnimatePresence>
             </div>
 
-            <button
-              onClick={() => paginate(1)}
-              className="p-3 rounded-full bg-card/50 border border-border hover:bg-primary hover:border-primary transition-colors group"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="w-5 h-5 group-hover:text-primary-foreground transition-colors" />
-            </button>
+            {/* Navigation buttons */}
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => paginate(-1)}
+                className="p-3 rounded-full bg-card/50 border border-border hover:bg-primary hover:border-primary transition-colors group"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="w-5 h-5 group-hover:text-primary-foreground transition-colors" />
+              </button>
+
+              {/* Dots indicator */}
+              <div className="flex gap-2">
+                {testimonialsData.testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setDirection(index > current ? 1 : -1)
+                      setCurrent(index)
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === current ? "bg-primary w-8" : "bg-muted-foreground/30"
+                    }`}
+                    aria-label={`Go to testimonial ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={() => paginate(1)}
+                className="p-3 rounded-full bg-card/50 border border-border hover:bg-primary hover:border-primary transition-colors group"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="w-5 h-5 group-hover:text-primary-foreground transition-colors" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   )

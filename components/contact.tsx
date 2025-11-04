@@ -3,18 +3,60 @@
 import type React from "react"
 
 import { motion } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Mail, Send, CheckCircle2, Instagram, Twitter, Youtube, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-const socialLinks = [
-  { name: "Instagram", icon: Instagram, href: "#", color: "#E4405F" },
-  { name: "Twitter", icon: Twitter, href: "#", color: "#1DA1F2" },
-  { name: "YouTube", icon: Youtube, href: "#", color: "#FF0000" },
-  { name: "LinkedIn", icon: Linkedin, href: "#", color: "#0A66C2" },
-]
+// Icon mapping
+const iconMap: { [key: string]: any } = {
+  Instagram,
+  Twitter,
+  Youtube,
+  Linkedin,
+}
+
+// Social Link Card Component
+function SocialLinkCard({ social, iconMap }: { social: any, iconMap: any }) {
+  const [logoError, setLogoError] = useState(false)
+  const Icon = iconMap[social.icon] || Instagram
+  const hasLogo = social.logo && social.logo.trim() !== '' && !logoError
+
+  return (
+    <motion.a
+      href={social.href || "#"}
+      target={social.href && social.href !== '#' ? '_blank' : undefined}
+      rel={social.href && social.href !== '#' ? 'noopener noreferrer' : undefined}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl bg-background border border-border hover:border-primary transition-colors group"
+    >
+      {hasLogo ? (
+        // Display logo image
+        <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-background flex-shrink-0">
+          <img
+            src={social.logo}
+            alt={social.name}
+            className="w-full h-full object-contain p-2"
+            onError={() => setLogoError(true)}
+          />
+        </div>
+      ) : (
+        // Display icon
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: `${social.color || '#000000'}15` }}
+        >
+          <Icon className="w-5 h-5" style={{ color: social.color || '#000000' }} />
+        </div>
+      )}
+      <span className="text-xs sm:text-sm font-medium group-hover:text-primary transition-colors">
+        {social.name}
+      </span>
+    </motion.a>
+  )
+}
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -24,6 +66,32 @@ export default function Contact() {
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [contactData, setContactData] = useState({
+    title: "Let's Connect",
+    subtitle: "Have a story to share? Want to collaborate? We'd love to hear from you.",
+    email: "routesroutesrealtalk@gmail.com",
+    socialLinks: [
+      { name: "Instagram", icon: "Instagram", href: "#", color: "#E4405F" },
+      { name: "Twitter", icon: "Twitter", href: "#", color: "#1DA1F2" },
+      { name: "YouTube", icon: "Youtube", href: "#", color: "#FF0000" },
+      { name: "LinkedIn", icon: "Linkedin", href: "#", color: "#0A66C2" },
+    ]
+  })
+
+  useEffect(() => {
+    const fetchContactData = async () => {
+      try {
+        const response = await fetch('/api/cms')
+        const data = await response.json()
+        if (data.contact) {
+          setContactData(data.contact)
+        }
+      } catch (error) {
+        console.error('Failed to fetch contact data:', error)
+      }
+    }
+    fetchContactData()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,10 +131,21 @@ export default function Contact() {
           className="text-center mb-8 sm:mb-12 md:mb-16"
         >
           <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-3 sm:mb-4">
-            Let's <span className="text-primary">Connect</span>
+            {(() => {
+              const words = contactData.title.split(' ')
+              if (words.length >= 2) {
+                return (
+                  <>
+                    {words.slice(0, -1).join(' ')} <span className="text-primary">{words.slice(-1)[0]}</span>
+                  </>
+                )
+              } else {
+                return <span className="text-primary">{contactData.title}</span>
+              }
+            })()}
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-            Have a story to share? Want to collaborate? We'd love to hear from you.
+            {contactData.subtitle}
           </p>
         </motion.div>
 
@@ -179,10 +258,10 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Email Us</h3>
                   <a
-                    href="mailto:hello@r3tpodcast.com"
+                    href={`mailto:${contactData.email}`}
                     className="text-muted-foreground hover:text-primary transition-colors"
                   >
-                    routesroutesrealtalk@gmail.com
+                    {contactData.email}
                   </a>
                 </div>
               </div>
@@ -191,30 +270,23 @@ export default function Contact() {
             {/* Social Links */}
             <div className="bg-card/50 border border-border rounded-2xl p-6 sm:p-8">
               <h3 className="font-semibold text-lg mb-4 sm:mb-6">Follow Us</h3>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon
-                  return (
-                    <motion.a
-                      key={social.name}
-                      href={social.href}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl bg-background border border-border hover:border-primary transition-colors group"
-                    >
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: `${social.color}15` }}
-                      >
-                        <Icon className="w-5 h-5" style={{ color: social.color }} />
-                      </div>
-                      <span className="text-xs sm:text-sm font-medium group-hover:text-primary transition-colors">
-                        {social.name}
-                      </span>
-                    </motion.a>
-                  )
-                })}
-              </div>
+              {(contactData.socialLinks || []).length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {contactData.socialLinks.map((social) => {
+                    return (
+                      <SocialLinkCard
+                        key={social.name}
+                        social={social}
+                        iconMap={iconMap}
+                      />
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No social links added yet.
+                </p>
+              )}
             </div>
 
            

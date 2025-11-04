@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Upload, Trash2, Plus, Lock, Eye, EyeOff, Edit, Settings, Save, Image as ImageIcon, Users, MessageSquare, Link, Globe, Menu, Home } from "lucide-react"
 import { toast } from "sonner"
@@ -814,9 +814,104 @@ export default function AdminPage() {
   )
 }
 
+// Image Upload Button Component
+function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (10MB limit for images)
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      toast.error(`File too large! Maximum size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image or use a smaller file.`)
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file")
+      return
+    }
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      toast.info(`Uploading ${file.name}...`)
+
+      const uploadResponse = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const uploadData = await uploadResponse.json()
+      
+      if (uploadData.success) {
+        toast.success("Image uploaded successfully!")
+        onUpload(uploadData.url)
+      } else {
+        toast.error(uploadData.error || "Failed to upload image")
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error("Upload failed. Please try again.")
+    } finally {
+      setUploading(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  return (
+    <>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        disabled={uploading}
+        className="hidden"
+        id={`image-upload-${Math.random()}`}
+        ref={fileInputRef}
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        className={`px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 ${
+          uploading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+        title="Upload image from device"
+      >
+        {uploading ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span className="hidden sm:inline">Uploading...</span>
+          </>
+        ) : (
+          <>
+            <ImageIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Upload</span>
+          </>
+        )}
+      </button>
+    </>
+  )
+}
+
 // Section Editor Components
 function HeroSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [slides, setSlides] = useState(data.slides || [])
+
+  // Sync slides with data prop when it changes
+  useEffect(() => {
+    setSlides(data.slides || [])
+  }, [data])
 
   const addSlide = () => {
     const newSlide = {
@@ -880,13 +975,18 @@ function HeroSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Image URL</label>
-                <input
-                  type="text"
-                  value={slide.image}
-                  onChange={(e) => updateSlide(index, 'image', e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg"
-                  placeholder="/path/to/image.jpg"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={slide.image}
+                    onChange={(e) => updateSlide(index, 'image', e.target.value)}
+                    className="flex-1 px-3 py-2 border border-border rounded-lg"
+                    placeholder="/path/to/image.jpg"
+                  />
+                  <ImageUploadButton
+                    onUpload={(url) => updateSlide(index, 'image', url)}
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Title</label>
@@ -938,6 +1038,11 @@ function HeroSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any
 
 function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState(data)
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData(data)
+  }, [data])
 
   const updateField = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value })
@@ -1013,13 +1118,18 @@ function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: an
 
         <div>
           <label className="block text-sm font-medium mb-2">Image URL</label>
-          <input
-            type="text"
-            value={formData.image}
-            onChange={(e) => updateField('image', e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-lg"
-            placeholder="/path/to/image.jpg"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={formData.image}
+              onChange={(e) => updateField('image', e.target.value)}
+              className="flex-1 px-3 py-2 border border-border rounded-lg"
+              placeholder="/path/to/image.jpg"
+            />
+            <ImageUploadButton
+              onUpload={(url) => updateField('image', url)}
+            />
+          </div>
         </div>
 
         <div>
@@ -1039,6 +1149,11 @@ function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: an
 
 function HostsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState(data)
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData(data)
+  }, [data])
 
   const updateHost = (index: number, field: string, value: string) => {
     const newHosts = [...formData.hosts]
@@ -1120,12 +1235,17 @@ function HostsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: an
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Image URL</label>
-                <input
-                  type="text"
-                  value={host.image}
-                  onChange={(e) => updateHost(index, 'image', e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={host.image}
+                    onChange={(e) => updateHost(index, 'image', e.target.value)}
+                    className="flex-1 px-3 py-2 border border-border rounded-lg"
+                  />
+                  <ImageUploadButton
+                    onUpload={(url) => updateHost(index, 'image', url)}
+                  />
+                </div>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2">Bio</label>
@@ -1146,6 +1266,11 @@ function HostsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: an
 
 function ProducerSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState(data)
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData(data)
+  }, [data])
 
   const updateField = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value })
@@ -1190,12 +1315,17 @@ function ProducerSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
 
         <div>
           <label className="block text-sm font-medium mb-2">Image URL</label>
-          <input
-            type="text"
-            value={formData.image}
-            onChange={(e) => updateField('image', e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-lg"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={formData.image}
+              onChange={(e) => updateField('image', e.target.value)}
+              className="flex-1 px-3 py-2 border border-border rounded-lg"
+            />
+            <ImageUploadButton
+              onUpload={(url) => updateField('image', url)}
+            />
+          </div>
         </div>
 
         <div>
@@ -1214,6 +1344,11 @@ function ProducerSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
 
 function TestimonialsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState(data)
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData(data)
+  }, [data])
 
   const updateTestimonial = (index: number, field: string, value: string) => {
     const newTestimonials = [...formData.testimonials]
@@ -1325,12 +1460,17 @@ function TestimonialsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (d
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-2">Avatar URL</label>
-                  <input
-                    type="text"
-                    value={testimonial.avatar}
-                    onChange={(e) => updateTestimonial(index, 'avatar', e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={testimonial.avatar}
+                      onChange={(e) => updateTestimonial(index, 'avatar', e.target.value)}
+                      className="flex-1 px-3 py-2 border border-border rounded-lg"
+                    />
+                    <ImageUploadButton
+                      onUpload={(url) => updateTestimonial(index, 'avatar', url)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1342,10 +1482,21 @@ function TestimonialsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (d
 }
 
 function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    ...data,
+    platforms: data.platforms || []
+  })
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData({
+      ...data,
+      platforms: data.platforms || []
+    })
+  }, [data])
 
   const updatePlatform = (index: number, field: string, value: string) => {
-    const newPlatforms = [...formData.platforms]
+    const newPlatforms = [...(formData.platforms || [])]
     newPlatforms[index] = { ...newPlatforms[index], [field]: value }
     setFormData({ ...formData, platforms: newPlatforms })
   }
@@ -1353,15 +1504,18 @@ function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
   const addPlatform = () => {
     const newPlatform = {
       name: '',
+      logo: '',
       icon: '',
       color: '#000000',
       url: ''
     }
-    setFormData({ ...formData, platforms: [...formData.platforms, newPlatform] })
+    const currentPlatforms = formData.platforms || []
+    setFormData({ ...formData, platforms: [...currentPlatforms, newPlatform] })
   }
 
   const removePlatform = (index: number) => {
-    const newPlatforms = formData.platforms.filter((_: any, i: number) => i !== index)
+    const currentPlatforms = formData.platforms || []
+    const newPlatforms = currentPlatforms.filter((_: any, i: number) => i !== index)
     setFormData({ ...formData, platforms: newPlatforms })
   }
 
@@ -1411,7 +1565,12 @@ function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
         </div>
 
         <div className="space-y-4">
-          {formData.platforms.map((platform: any, index: number) => (
+          {(formData.platforms || []).length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No platforms added yet. Click "Add Platform" to add a new partner.
+            </p>
+          )}
+          {(formData.platforms || []).map((platform: any, index: number) => (
             <div key={index} className="border border-border rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-medium">Platform {index + 1}</h4>
@@ -1425,41 +1584,60 @@ function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <label className="block text-sm font-medium mb-2">Partner Name</label>
                   <input
                     type="text"
                     value={platform.name}
                     onChange={(e) => updatePlatform(index, 'name', e.target.value)}
                     className="w-full px-3 py-2 border border-border rounded-lg"
+                    placeholder="Partner name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Icon (Lucide icon name)</label>
-                  <input
-                    type="text"
-                    value={platform.icon}
-                    onChange={(e) => updatePlatform(index, 'icon', e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
-                    placeholder="Music, Podcast, etc."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Color</label>
-                  <input
-                    type="color"
-                    value={platform.color}
-                    onChange={(e) => updatePlatform(index, 'color', e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">URL</label>
+                  <label className="block text-sm font-medium mb-2">Link URL</label>
                   <input
                     type="text"
                     value={platform.url}
                     onChange={(e) => updatePlatform(index, 'url', e.target.value)}
                     className="w-full px-3 py-2 border border-border rounded-lg"
                     placeholder="https://..."
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Logo (Image URL or Upload)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={platform.logo || ''}
+                      onChange={(e) => updatePlatform(index, 'logo', e.target.value)}
+                      className="flex-1 px-3 py-2 border border-border rounded-lg"
+                      placeholder="https://... or upload logo"
+                    />
+                    <ImageUploadButton
+                      onUpload={(url) => updatePlatform(index, 'logo', url)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    If you upload a logo, it will be used instead of icon. Leave empty to use icon below.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Icon (Lucide icon name) - Optional</label>
+                  <input
+                    type="text"
+                    value={platform.icon || ''}
+                    onChange={(e) => updatePlatform(index, 'icon', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    placeholder="Music, Podcast, etc. (only if no logo)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Color (for icon background)</label>
+                  <input
+                    type="color"
+                    value={platform.color || '#000000'}
+                    onChange={(e) => updatePlatform(index, 'color', e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg h-10"
                   />
                 </div>
               </div>
@@ -1472,10 +1650,22 @@ function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
 }
 
 function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    ...data,
+    socialLinks: data.socialLinks || []
+  })
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData({
+      ...data,
+      socialLinks: data.socialLinks || []
+    })
+  }, [data])
 
   const updateSocialLink = (index: number, field: string, value: string) => {
-    const newSocialLinks = [...formData.socialLinks]
+    const currentSocialLinks = formData.socialLinks || []
+    const newSocialLinks = [...currentSocialLinks]
     newSocialLinks[index] = { ...newSocialLinks[index], [field]: value }
     setFormData({ ...formData, socialLinks: newSocialLinks })
   }
@@ -1484,14 +1674,17 @@ function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: 
     const newSocialLink = {
       name: '',
       icon: '',
+      logo: '',
       href: '',
       color: '#000000'
     }
-    setFormData({ ...formData, socialLinks: [...formData.socialLinks, newSocialLink] })
+    const currentSocialLinks = formData.socialLinks || []
+    setFormData({ ...formData, socialLinks: [...currentSocialLinks, newSocialLink] })
   }
 
   const removeSocialLink = (index: number) => {
-    const newSocialLinks = formData.socialLinks.filter((_: any, i: number) => i !== index)
+    const currentSocialLinks = formData.socialLinks || []
+    const newSocialLinks = currentSocialLinks.filter((_: any, i: number) => i !== index)
     setFormData({ ...formData, socialLinks: newSocialLinks })
   }
 
@@ -1543,18 +1736,27 @@ function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: 
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium">Social Links</label>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Social Links</label>
+              <p className="text-xs text-muted-foreground">Add your social media accounts</p>
+            </div>
             <button
               onClick={addSocialLink}
-              className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
             >
-              Add Link
+              <Plus className="w-4 h-4" />
+              Add Social Account
             </button>
           </div>
           
           <div className="space-y-4">
-            {formData.socialLinks.map((link: any, index: number) => (
+            {(formData.socialLinks || []).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No social links added yet. Click "Add Link" to add a new social account.
+              </p>
+            )}
+            {(formData.socialLinks || []).map((link: any, index: number) => (
               <div key={index} className="border border-border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-medium">Social Link {index + 1}</h4>
@@ -1574,15 +1776,6 @@ function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: 
                       value={link.name}
                       onChange={(e) => updateSocialLink(index, 'name', e.target.value)}
                       className="w-full px-3 py-2 border border-border rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Icon (Lucide icon name)</label>
-                    <input
-                      type="text"
-                      value={link.icon}
-                      onChange={(e) => updateSocialLink(index, 'icon', e.target.value)}
-                      className="w-full px-3 py-2 border border-border rounded-lg"
                       placeholder="Instagram, Twitter, etc."
                     />
                   </div>
@@ -1596,13 +1789,41 @@ function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: 
                       placeholder="https://..."
                     />
                   </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-2">Logo (Image URL or Upload)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={link.logo || ''}
+                        onChange={(e) => updateSocialLink(index, 'logo', e.target.value)}
+                        className="flex-1 px-3 py-2 border border-border rounded-lg"
+                        placeholder="https://... or upload logo"
+                      />
+                      <ImageUploadButton
+                        onUpload={(url) => updateSocialLink(index, 'logo', url)}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      If you upload a logo, it will be used instead of icon. Leave empty to use icon below.
+                    </p>
+                  </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Color</label>
+                    <label className="block text-sm font-medium mb-2">Icon (Lucide icon name) - Optional</label>
+                    <input
+                      type="text"
+                      value={link.icon || ''}
+                      onChange={(e) => updateSocialLink(index, 'icon', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      placeholder="Instagram, Twitter, etc. (only if no logo)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Color (for icon background)</label>
                     <input
                       type="color"
-                      value={link.color}
+                      value={link.color || '#000000'}
                       onChange={(e) => updateSocialLink(index, 'color', e.target.value)}
-                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      className="w-full px-3 py-2 border border-border rounded-lg h-10"
                     />
                   </div>
                 </div>
@@ -1617,6 +1838,11 @@ function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: 
 
 function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState(data)
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData(data)
+  }, [data])
 
   const updateQuickLink = (index: number, field: string, value: string) => {
     const newQuickLinks = [...formData.quickLinks]
@@ -1799,6 +2025,11 @@ function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: a
 
 function NavbarSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState(data)
+
+  // Sync formData with data prop when it changes
+  useEffect(() => {
+    setFormData(data)
+  }, [data])
 
   const updateNavLink = (index: number, field: string, value: string) => {
     const newNavLinks = [...formData.navLinks]
