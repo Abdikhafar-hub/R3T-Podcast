@@ -52,7 +52,7 @@ export default function Footer() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
-
+//test
   return (
     <footer className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-black" />
