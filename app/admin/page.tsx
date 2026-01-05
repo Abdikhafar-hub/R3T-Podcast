@@ -823,10 +823,11 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Check file size (50MB limit for images)
-    const maxSize = 50 * 1024 * 1024 // 50MB
+    // Check file size (4MB limit for images - Next.js has ~4.5MB default limit)
+    // For larger files, compress the image first
+    const maxSize = 4 * 1024 * 1024 // 4MB (safe limit due to Next.js body size constraints)
     if (file.size > maxSize) {
-      toast.error(`File too large! Maximum size is 50MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image or use a smaller file.`)
+      toast.error(`File too large! Maximum size is 4MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image first using tools like TinyPNG (tinypng.com) or Squoosh (squoosh.app) to reduce file size.`)
       return
     }
 
@@ -841,12 +842,31 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
       const formData = new FormData()
       formData.append('file', file)
 
-      toast.info(`Uploading ${file.name}...`)
+      toast.info(`Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)...`)
 
       const uploadResponse = await fetch('/api/upload-image', {
         method: 'POST',
         body: formData,
       })
+
+      // Check if response is OK before parsing JSON
+      if (!uploadResponse.ok) {
+        // Try to parse error message
+        let errorMessage = 'Upload failed'
+        try {
+          const errorData = await uploadResponse.json()
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response is not JSON (e.g., HTML error page), provide helpful message
+          if (uploadResponse.status === 413) {
+            errorMessage = `File too large! The server rejected the upload. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image to under 4MB using tools like TinyPNG (tinypng.com) or Squoosh (squoosh.app).`
+          } else {
+            errorMessage = `Upload failed with status ${uploadResponse.status}. Please try compressing your image to under 4MB or use a smaller file.`
+          }
+        }
+        toast.error(errorMessage)
+        return
+      }
 
       const uploadData = await uploadResponse.json()
       
@@ -858,7 +878,11 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
       }
     } catch (error) {
       console.error('Upload error:', error)
-      toast.error("Upload failed. Please try again.")
+      if (error instanceof SyntaxError) {
+        toast.error("Upload failed - file may be too large. Please compress your image to under 4MB using TinyPNG or Squoosh and try again.")
+      } else {
+        toast.error("Upload failed. Please try again or compress your image to under 4MB if it's large.")
+      }
     } finally {
       setUploading(false)
       // Reset file input

@@ -8,6 +8,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
+// Route segment config - increase body size limit
+export const runtime = 'nodejs'
+export const maxDuration = 300 // 5 minutes
+
 export async function POST(request: NextRequest) {
   try {
     // Check Cloudinary configuration
@@ -25,11 +29,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
     
-    // Check file size (limit to 50MB for images)
-    const maxSize = 50 * 1024 * 1024 // 50MB in bytes
+    // Check file size (limit to 4MB for images due to Next.js body size limits)
+    // Next.js has a default ~4.5MB limit for serverless functions
+    const maxSize = 4 * 1024 * 1024 // 4MB in bytes (safe limit)
     if (file.size > maxSize) {
       return NextResponse.json({ 
-        error: 'File too large. Maximum size is 50MB. Please compress your image or use a smaller file.' 
+        error: `File too large. Maximum size is 4MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image using tools like TinyPNG (tinypng.com) or Squoosh (squoosh.app) before uploading.` 
       }, { status: 413 })
     }
     
