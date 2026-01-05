@@ -136,10 +136,11 @@
         "color": "#E4405F"
       },
       {
-        "name": "Twitter",
-        "icon": "Twitter",
+        "name": "TikTok",
+        "icon": "",
         "href": "#",
-        "color": "#1DA1F2"
+        "color": "#000000",
+        "logo": ""
       },
       {
         "name": "YouTube",
@@ -196,9 +197,10 @@
         "href": "https://www.youtube.com/watch?v=L4MWKGstaHk&list=RDL4MWKGstaHk&start_radio=1"
       },
       {
-        "name": "Twitter",
-        "icon": "Twitter",
-        "href": "#"
+        "name": "TikTok",
+        "icon": "",
+        "href": "#",
+        "logo": ""
       },
       {
         "name": "YouTube",

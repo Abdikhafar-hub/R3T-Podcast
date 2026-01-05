@@ -5,7 +5,7 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { useInView } from "framer-motion"
 import { useRef, useState } from "react"
-import { Music2, Instagram, Twitter, Youtube } from "lucide-react"
+import { Music2, Instagram, Youtube } from "lucide-react"
 
 export default function Subscribe() {
   const ref = useRef(null)
@@ -21,7 +21,6 @@ export default function Subscribe() {
   const platforms = [
     { name: "Spotify", icon: Music2, link: "#" },
     { name: "Instagram", icon: Instagram, link: "#" },
-    { name: "Twitter", icon: Twitter, link: "#" },
     { name: "YouTube", icon: Youtube, link: "#" },
   ]
 

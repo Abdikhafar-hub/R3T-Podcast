@@ -823,10 +823,10 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Check file size (10MB limit for images)
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    // Check file size (50MB limit for images)
+    const maxSize = 50 * 1024 * 1024 // 50MB
     if (file.size > maxSize) {
-      toast.error(`File too large! Maximum size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image or use a smaller file.`)
+      toast.error(`File too large! Maximum size is 50MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image or use a smaller file.`)
       return
     }
 
@@ -1896,12 +1896,18 @@ function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: a
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Logo URL</label>
-            <input
-              type="text"
-              value={formData.logo}
-              onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-lg"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={formData.logo}
+                onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                className="flex-1 px-3 py-2 border border-border rounded-lg"
+                placeholder="/path/to/logo.png or upload"
+              />
+              <ImageUploadButton
+                onUpload={(url) => setFormData({ ...formData, logo: url })}
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Email</label>
@@ -1984,36 +1990,77 @@ function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: a
             </button>
           </div>
           
-          <div className="space-y-2">
+          <div className="space-y-4">
             {formData.socialLinks.map((link: any, index: number) => (
-              <div key={index} className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  value={link.name}
-                  onChange={(e) => updateSocialLink(index, 'name', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-border rounded-lg"
-                  placeholder="Social platform name"
-                />
-                <input
-                  type="text"
-                  value={link.icon}
-                  onChange={(e) => updateSocialLink(index, 'icon', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-border rounded-lg"
-                  placeholder="Icon name"
-                />
-                <input
-                  type="text"
-                  value={link.href}
-                  onChange={(e) => updateSocialLink(index, 'href', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-border rounded-lg"
-                  placeholder="Social URL"
-                />
-                <button
-                  onClick={() => removeSocialLink(index)}
-                  className="px-3 py-2 text-red-600 hover:text-red-700"
-                >
-                  Remove
-                </button>
+              <div key={index} className="border border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-medium">Social Link {index + 1}</h4>
+                  <button
+                    onClick={() => removeSocialLink(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Name</label>
+                    <input
+                      type="text"
+                      value={link.name}
+                      onChange={(e) => updateSocialLink(index, 'name', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      placeholder="Instagram, TikTok, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">URL</label>
+                    <input
+                      type="text"
+                      value={link.href}
+                      onChange={(e) => updateSocialLink(index, 'href', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-2">Logo (Image URL or Upload)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={link.logo || ''}
+                        onChange={(e) => updateSocialLink(index, 'logo', e.target.value)}
+                        className="flex-1 px-3 py-2 border border-border rounded-lg"
+                        placeholder="https://... or upload logo"
+                      />
+                      <ImageUploadButton
+                        onUpload={(url) => updateSocialLink(index, 'logo', url)}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      If you upload a logo, it will be used instead of icon. Leave empty to use icon below.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Icon (Lucide icon name) - Optional</label>
+                    <input
+                      type="text"
+                      value={link.icon || ''}
+                      onChange={(e) => updateSocialLink(index, 'icon', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      placeholder="Instagram, Youtube, etc. (only if no logo)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Color (for icon background)</label>
+                    <input
+                      type="color"
+                      value={link.color || '#000000'}
+                      onChange={(e) => updateSocialLink(index, 'color', e.target.value)}
+                      className="w-full px-3 py-2 border border-border rounded-lg h-10"
+                    />
+                  </div>
+                </div>
               </div>
             ))}
           </div>

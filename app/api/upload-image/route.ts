@@ -10,6 +10,14 @@ cloudinary.config({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check Cloudinary configuration
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error('Cloudinary configuration missing')
+      return NextResponse.json({ 
+        error: 'Server configuration error. Please contact the administrator.' 
+      }, { status: 500 })
+    }
+
     const data = await request.formData()
     const file: File | null = data.get('file') as unknown as File
     
@@ -17,11 +25,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
     
-    // Check file size (limit to 10MB for images)
-    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+    // Check file size (limit to 50MB for images)
+    const maxSize = 50 * 1024 * 1024 // 50MB in bytes
     if (file.size > maxSize) {
       return NextResponse.json({ 
-        error: 'File too large. Maximum size is 10MB. Please compress your image or use a smaller file.' 
+        error: 'File too large. Maximum size is 50MB. Please compress your image or use a smaller file.' 
       }, { status: 413 })
     }
     
@@ -38,8 +46,8 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     
-    // Upload to Cloudinary
-    const result = await new Promise((resolve, reject) => {
+    // Upload to Cloudinary with timeout
+    const uploadPromise = new Promise((resolve, reject) => {
       cloudinary.uploader.upload(
         `data:${file.type};base64,${buffer.toString('base64')}`,
         {
@@ -48,6 +56,7 @@ export async function POST(request: NextRequest) {
           public_id: `image_${Date.now()}`,
           quality: 'auto',
           fetch_format: 'auto',
+          timeout: 60000, // 60 seconds timeout
         },
         (error, result) => {
           if (error) {
@@ -60,6 +69,13 @@ export async function POST(request: NextRequest) {
         }
       )
     })
+
+    // Add timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Upload timeout. The file may be too large or the connection is slow.')), 120000) // 2 minutes total timeout
+    })
+
+    const result = await Promise.race([uploadPromise, timeoutPromise])
     
     return NextResponse.json({ 
       success: true, 
@@ -73,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error) {
       if (error.message.includes('413')) {
         return NextResponse.json({ 
-          error: 'File too large. Please try a smaller image file (under 10MB).' 
+          error: 'File too large. Please try a smaller image file (under 50MB).' 
         }, { status: 413 })
       }
       if (error.message.includes('timeout')) {

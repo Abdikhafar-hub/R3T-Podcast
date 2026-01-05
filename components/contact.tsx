@@ -4,7 +4,7 @@ import type React from "react"
 
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
-import { Mail, Send, CheckCircle2, Instagram, Twitter, Youtube, Linkedin } from "lucide-react"
+import { Mail, Send, CheckCircle2, Instagram, Youtube, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea"
 // Icon mapping
 const iconMap: { [key: string]: any } = {
   Instagram,
-  Twitter,
   Youtube,
   Linkedin,
 }
@@ -72,7 +71,7 @@ export default function Contact() {
     email: "routesroutesrealtalk@gmail.com",
     socialLinks: [
       { name: "Instagram", icon: "Instagram", href: "#", color: "#E4405F" },
-      { name: "Twitter", icon: "Twitter", href: "#", color: "#1DA1F2" },
+      { name: "TikTok", icon: "", href: "#", color: "#000000", logo: "" },
       { name: "YouTube", icon: "Youtube", href: "#", color: "#FF0000" },
       { name: "LinkedIn", icon: "Linkedin", href: "#", color: "#0A66C2" },
     ]

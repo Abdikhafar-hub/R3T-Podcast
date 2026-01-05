@@ -1,14 +1,13 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ArrowUp, Instagram, Twitter, Youtube, Linkedin, Mail } from "lucide-react"
+import { ArrowUp, Instagram, Youtube, Linkedin, Mail } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 
 // Icon mapping
 const iconMap: { [key: string]: any } = {
   Instagram,
-  Twitter,
   Youtube,
   Linkedin,
 }
@@ -28,7 +27,7 @@ export default function Footer() {
     ],
     socialLinks: [
       { name: "Instagram", icon: "Instagram", href: "#" },
-      { name: "Twitter", icon: "Twitter", href: "#" },
+      { name: "TikTok", icon: "", href: "#", logo: "" },
       { name: "YouTube", icon: "Youtube", href: "#" },
       { name: "LinkedIn", icon: "Linkedin", href: "#" },
     ]
@@ -133,6 +132,7 @@ export default function Footer() {
             <div className="flex gap-2 sm:gap-3">
               {footerData.socialLinks.map((social) => {
                 const Icon = iconMap[social.icon] || Instagram
+                const hasLogo = social.logo && social.logo.trim() !== ''
                 return (
                   <motion.a
                     key={social.name}
@@ -142,7 +142,15 @@ export default function Footer() {
                     className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-primary hover:border-primary transition-all duration-300 group shadow-lg hover:shadow-primary/20"
                     aria-label={social.name}
                   >
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
+                    {hasLogo ? (
+                      <img
+                        src={social.logo}
+                        alt={social.name}
+                        className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+                      />
+                    ) : (
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
+                    )}
                   </motion.a>
                 )
               })}
