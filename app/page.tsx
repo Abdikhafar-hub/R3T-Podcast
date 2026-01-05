@@ -3,7 +3,6 @@ import About from "@/components/about"
 import Hosts from "@/components/hosts"
 import Producer from "@/components/producer"
 import Videos from "@/components/videos"
-import Testimonials from "@/components/testimonials"
 import Partners from "@/components/partners"
 import Subscribe from "@/components/subscribe"
 import Contact from "@/components/contact"
@@ -19,7 +18,6 @@ export default function Home() {
       <Hosts />
       <Producer />
       <Videos />
-      <Testimonials />
       <Partners />
       <Subscribe />
       <Contact />
