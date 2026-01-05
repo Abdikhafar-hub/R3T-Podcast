@@ -6,7 +6,7 @@ const nextConfig = {
   },
   serverExternalPackages: ['cloudinary'],
   
-  // Disable these for production stability if you have errors
+  // Disable these for production stability if you have errors.
   eslint: {
     ignoreDuringBuilds: true,
   },
