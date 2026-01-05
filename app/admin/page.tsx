@@ -823,12 +823,11 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Check file size (4MB limit for images - Next.js has ~4.5MB default limit)
-    // For larger files, compress the image first
-    const maxSize = 4 * 1024 * 1024 // 4MB (safe limit due to Next.js body size constraints)
-    if (file.size > maxSize) {
-      toast.error(`File too large! Maximum size is 4MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image first using tools like TinyPNG (tinypng.com) or Squoosh (squoosh.app) to reduce file size.`)
-      return
+    // No size restriction - allow large files
+    // Note: Cloudinary may have limits based on your plan
+    const fileSizeMB = (file.size / 1024 / 1024).toFixed(2)
+    if (file.size > 100 * 1024 * 1024) { // Warn if over 100MB
+      toast.info(`Uploading large file (${fileSizeMB}MB). This may take a while...`)
     }
 
     // Check file type
@@ -859,9 +858,9 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
         } catch {
           // If response is not JSON (e.g., HTML error page), provide helpful message
           if (uploadResponse.status === 413) {
-            errorMessage = `File too large! The server rejected the upload. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image to under 4MB using tools like TinyPNG (tinypng.com) or Squoosh (squoosh.app).`
+            errorMessage = `File too large! The server rejected the upload. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. This may be a Cloudinary account limit. Check your Cloudinary plan limits.`
           } else {
-            errorMessage = `Upload failed with status ${uploadResponse.status}. Please try compressing your image to under 4MB or use a smaller file.`
+            errorMessage = `Upload failed with status ${uploadResponse.status}. Please check the error details and try again.`
           }
         }
         toast.error(errorMessage)
@@ -879,9 +878,9 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
     } catch (error) {
       console.error('Upload error:', error)
       if (error instanceof SyntaxError) {
-        toast.error("Upload failed - file may be too large. Please compress your image to under 4MB using TinyPNG or Squoosh and try again.")
+        toast.error("Upload failed - server may have rejected the request. Check your Nginx configuration and Cloudinary limits.")
       } else {
-        toast.error("Upload failed. Please try again or compress your image to under 4MB if it's large.")
+        toast.error("Upload failed. Please try again. If the file is very large, it may take several minutes to upload.")
       }
     } finally {
       setUploading(false)

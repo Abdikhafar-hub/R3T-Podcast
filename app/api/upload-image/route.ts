@@ -8,9 +8,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-// Route segment config - increase body size limit
+// Route segment config - increase body size limit and duration for large files
 export const runtime = 'nodejs'
-export const maxDuration = 300 // 5 minutes
+export const maxDuration = 600 // 10 minutes for large file uploads
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,14 +29,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
     
-    // Check file size (limit to 4MB for images due to Next.js body size limits)
-    // Next.js has a default ~4.5MB limit for serverless functions
-    const maxSize = 4 * 1024 * 1024 // 4MB in bytes (safe limit)
-    if (file.size > maxSize) {
-      return NextResponse.json({ 
-        error: `File too large. Maximum size is 4MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB. Please compress your image using tools like TinyPNG (tinypng.com) or Squoosh (squoosh.app) before uploading.` 
-      }, { status: 413 })
-    }
+    // Allow large files - check Cloudinary limits instead (typically 10MB for free, 100MB+ for paid)
+    // No size restriction on our end - let Cloudinary handle it
+    const fileSizeMB = (file.size / 1024 / 1024).toFixed(2)
+    console.log(`Uploading image: ${file.name}, Size: ${fileSizeMB}MB`)
     
     // Check file type - only images
     if (!file.type.startsWith('image/')) {
@@ -45,13 +41,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
     
-    console.log(`Uploading image: ${file.name}, Size: ${(file.size / 1024 / 1024).toFixed(2)}MB`)
-    
     // Convert file to buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     
-    // Upload to Cloudinary with timeout
+    // Upload to Cloudinary with extended timeout for large files
     const uploadPromise = new Promise((resolve, reject) => {
       cloudinary.uploader.upload(
         `data:${file.type};base64,${buffer.toString('base64')}`,
@@ -61,7 +55,7 @@ export async function POST(request: NextRequest) {
           public_id: `image_${Date.now()}`,
           quality: 'auto',
           fetch_format: 'auto',
-          timeout: 60000, // 60 seconds timeout
+          timeout: 300000, // 5 minutes timeout for large files
         },
         (error, result) => {
           if (error) {
@@ -75,9 +69,9 @@ export async function POST(request: NextRequest) {
       )
     })
 
-    // Add timeout wrapper
+    // Extended timeout wrapper for large file uploads
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Upload timeout. The file may be too large or the connection is slow.')), 120000) // 2 minutes total timeout
+      setTimeout(() => reject(new Error('Upload timeout. The file may be very large or the connection is slow.')), 600000) // 10 minutes total timeout
     })
 
     const result = await Promise.race([uploadPromise, timeoutPromise])
@@ -92,14 +86,14 @@ export async function POST(request: NextRequest) {
     
     // Handle specific error types
     if (error instanceof Error) {
-      if (error.message.includes('413')) {
+      if (error.message.includes('413') || error.message.includes('too large')) {
         return NextResponse.json({ 
-          error: 'File too large. Please try a smaller image file (under 50MB).' 
+          error: 'File upload rejected. This may be due to Cloudinary account limits. Check your Cloudinary plan for maximum file size limits.' 
         }, { status: 413 })
       }
       if (error.message.includes('timeout')) {
         return NextResponse.json({ 
-          error: 'Upload timeout. Please try again with a smaller file.' 
+          error: 'Upload timeout. Large files may take several minutes. Please try again or check your connection.' 
         }, { status: 408 })
       }
     }
