@@ -13,12 +13,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['cloudinary'],
   },
-  // Configure API routes for large uploads
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb',
-    },
-  },
 }
 
 export default nextConfig
