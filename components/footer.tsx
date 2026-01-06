@@ -21,7 +21,7 @@ export default function Footer() {
     quickLinks: [
       { name: "Home", href: "#" },
       { name: "About", href: "#about" },
-      { name: "Episodes", href: "#episodes" },
+      { name: "Episodes", href: "#partners" },
       { name: "Videos", href: "#videos" },
       { name: "Contact", href: "#contact" },
     ],

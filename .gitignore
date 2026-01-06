@@ -25,3 +25,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# CMS data files (local changes shouldn't affect production)
+data/cms-data.json
+data/videos.json

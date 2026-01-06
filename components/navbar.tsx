@@ -16,7 +16,6 @@ export default function Navbar() {
       { href: "#hosts", label: "Hosts" },
       { href: "#videos", label: "Videos" },
       { href: "#partners", label: "Episodes" },
-      { href: "#subscribe", label: "Subscribe" },
     ],
     ctaText: "Listen Now",
     ctaLink: "#videos"

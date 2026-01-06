@@ -4,7 +4,6 @@ import Hosts from "@/components/hosts"
 import Producer from "@/components/producer"
 import Videos from "@/components/videos"
 import Partners from "@/components/partners"
-import Subscribe from "@/components/subscribe"
 import Contact from "@/components/contact"
 import Footer from "@/components/footer"
 import Navbar from "@/components/navbar"
@@ -19,7 +18,6 @@ export default function Home() {
       <Producer />
       <Videos />
       <Partners />
-      <Subscribe />
       <Contact />
       <Footer />
     </main>
