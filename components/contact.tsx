@@ -271,7 +271,7 @@ export default function Contact() {
               <h3 className="font-semibold text-lg mb-4 sm:mb-6">Follow Us</h3>
               {(contactData.socialLinks || []).length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {contactData.socialLinks.map((social) => {
+                  {contactData.socialLinks && Array.isArray(contactData.socialLinks) && contactData.socialLinks.map((social) => {
                     return (
                       <SocialLinkCard
                         key={social.name}

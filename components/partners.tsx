@@ -120,7 +120,7 @@ export default function Partners() {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-w-6xl mx-auto">
-          {partnersData.platforms.map((platform, index) => {
+          {partnersData.platforms && Array.isArray(partnersData.platforms) && partnersData.platforms.map((platform, index) => {
             return (
               <PartnerCard
                 key={platform.name || index}

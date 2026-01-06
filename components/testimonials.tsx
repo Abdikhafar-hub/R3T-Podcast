@@ -38,14 +38,14 @@ export default function Testimonials() {
   }, [])
 
   useEffect(() => {
-    if (testimonialsData.testimonials.length > 0) {
+    if (testimonialsData.testimonials && Array.isArray(testimonialsData.testimonials) && testimonialsData.testimonials.length > 0) {
       const timer = setInterval(() => {
         setDirection(1)
         setCurrent((prev) => (prev + 1) % testimonialsData.testimonials.length)
       }, 6000)
       return () => clearInterval(timer)
     }
-  }, [testimonialsData.testimonials.length])
+  }, [testimonialsData.testimonials?.length])
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -112,7 +112,7 @@ export default function Testimonials() {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{testimonialsData.subtitle}</p>
         </motion.div>
 
-        {testimonialsData.testimonials.length > 0 && (
+        {testimonialsData.testimonials && Array.isArray(testimonialsData.testimonials) && testimonialsData.testimonials.length > 0 && (
           <div className="max-w-4xl mx-auto relative">
             {/* Testimonial carousel */}
             <div className="relative h-[400px] md:h-[300px] flex items-center justify-center">
@@ -165,7 +165,7 @@ export default function Testimonials() {
 
               {/* Dots indicator */}
               <div className="flex gap-2">
-                {testimonialsData.testimonials.map((_, index) => (
+                {testimonialsData.testimonials && Array.isArray(testimonialsData.testimonials) && testimonialsData.testimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => {

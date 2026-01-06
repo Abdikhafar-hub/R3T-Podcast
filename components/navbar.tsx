@@ -60,7 +60,7 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navbarData.navLinks.map((link) => (
+            {navbarData.navLinks && Array.isArray(navbarData.navLinks) && navbarData.navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -97,7 +97,7 @@ export default function Navbar() {
           className="md:hidden bg-card border-t border-border"
         >
           <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-            {navbarData.navLinks.map((link) => (
+            {navbarData.navLinks && Array.isArray(navbarData.navLinks) && navbarData.navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

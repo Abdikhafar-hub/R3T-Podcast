@@ -80,7 +80,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-base sm:text-lg mb-4 sm:mb-6 text-foreground">Quick Links</h4>
             <nav className="flex flex-col gap-2 sm:gap-3">
-              {footerData.quickLinks.map((link) => (
+              {footerData.quickLinks && Array.isArray(footerData.quickLinks) && footerData.quickLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
@@ -130,7 +130,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-base sm:text-lg mb-4 sm:mb-6 text-foreground">Follow Us</h4>
             <div className="flex gap-2 sm:gap-3">
-              {footerData.socialLinks.map((social) => {
+              {footerData.socialLinks && Array.isArray(footerData.socialLinks) && footerData.socialLinks.map((social) => {
                 const Icon = iconMap[social.icon] || Instagram
                 const hasLogo = social.logo && social.logo.trim() !== ''
                 return (

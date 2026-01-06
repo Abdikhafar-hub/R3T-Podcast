@@ -75,7 +75,7 @@ export default function Videos() {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-            {videos.map((video, index) => (
+            {videos && Array.isArray(videos) && videos.map((video, index) => (
               <motion.div
                 key={video.id}
                 initial={{ opacity: 0, y: 80 }}

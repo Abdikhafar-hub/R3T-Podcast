@@ -32,3 +32,4 @@
 
 Use the admin panel at `/admin` to update content. Changes made through the admin panel will update the data files on the server where the admin panel is accessed.
 
+

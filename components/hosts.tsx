@@ -67,7 +67,7 @@ export default function Hosts() {
         </motion.h2>
 
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
-          {hostsData.hosts.map((host, index) => (
+          {hostsData.hosts && Array.isArray(hostsData.hosts) && hostsData.hosts.map((host, index) => (
             <motion.div
               key={host.id || host.name}
               initial={{ opacity: 0, y: 80 }}
