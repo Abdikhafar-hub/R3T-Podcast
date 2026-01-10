@@ -11,14 +11,61 @@ cloudinary.config({
 })
 
 const videosFilePath = path.join(process.cwd(), 'data', 'videos.json')
+const videosExamplePath = path.join(process.cwd(), 'data', 'videos.json.example')
+
+// Helper function to ensure videos file exists
+function ensureVideosFile() {
+  const dataDir = path.dirname(videosFilePath)
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true })
+  }
+  
+  if (!fs.existsSync(videosFilePath)) {
+    // Initialize from example file if it exists
+    if (fs.existsSync(videosExamplePath)) {
+      fs.copyFileSync(videosExamplePath, videosFilePath)
+    } else {
+      // Create empty array if no example file
+      fs.writeFileSync(videosFilePath, JSON.stringify([], null, 2))
+    }
+  }
+}
+
+// Helper function to read videos
+function readVideos() {
+  try {
+    ensureVideosFile()
+    const videosData = fs.readFileSync(videosFilePath, 'utf8')
+    const parsed = JSON.parse(videosData)
+    // Ensure it's an array
+    if (Array.isArray(parsed)) {
+      return parsed
+    } else {
+      console.warn('Videos file does not contain an array, returning empty array')
+      return []
+    }
+  } catch (error) {
+    console.error('Error reading videos file:', error)
+    // Return empty array on error instead of throwing
+    return []
+  }
+}
+
+// Helper function to write videos
+function writeVideos(videos: any[]) {
+  ensureVideosFile()
+  fs.writeFileSync(videosFilePath, JSON.stringify(videos, null, 2))
+}
 
 export async function GET() {
   try {
-    const videosData = fs.readFileSync(videosFilePath, 'utf8')
-    const videos = JSON.parse(videosData)
-    return NextResponse.json(videos)
+    const videos = readVideos()
+    // Always return an array, even if empty
+    return NextResponse.json(Array.isArray(videos) ? videos : [])
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch videos' }, { status: 500 })
+    console.error('Error reading videos:', error)
+    // Return empty array instead of error object to prevent frontend crashes
+    return NextResponse.json([])
   }
 }
 
@@ -27,8 +74,7 @@ export async function POST(request: NextRequest) {
     const { title, description, src, featured = true, public_id } = await request.json()
     
     // Read current videos
-    const videosData = fs.readFileSync(videosFilePath, 'utf8')
-    const videos = JSON.parse(videosData)
+    const videos = readVideos()
     
     // Add new video
     const newVideo = {
@@ -44,10 +90,11 @@ export async function POST(request: NextRequest) {
     videos.push(newVideo)
     
     // Write back to file
-    fs.writeFileSync(videosFilePath, JSON.stringify(videos, null, 2))
+    writeVideos(videos)
     
     return NextResponse.json({ success: true, video: newVideo })
   } catch (error) {
+    console.error('Error adding video:', error)
     return NextResponse.json({ error: 'Failed to add video' }, { status: 500 })
   }
 }
@@ -61,8 +108,7 @@ export async function PUT(request: NextRequest) {
     }
     
     // Read current videos
-    const videosData = fs.readFileSync(videosFilePath, 'utf8')
-    const videos = JSON.parse(videosData)
+    const videos = readVideos()
     
     // Update video with provided fields
     const updatedVideos = videos.map((video: any) => {
@@ -78,10 +124,11 @@ export async function PUT(request: NextRequest) {
     })
     
     // Write back to file
-    fs.writeFileSync(videosFilePath, JSON.stringify(updatedVideos, null, 2))
+    writeVideos(updatedVideos)
     
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('Error updating video:', error)
     return NextResponse.json({ error: 'Failed to update video' }, { status: 500 })
   }
 }
@@ -96,8 +143,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Read current videos
-    const videosData = fs.readFileSync(videosFilePath, 'utf8')
-    const videos = JSON.parse(videosData)
+    const videos = readVideos()
     
     // Find the video to delete
     const videoToDelete = videos.find((video: any) => video.id === id)
@@ -118,10 +164,11 @@ export async function DELETE(request: NextRequest) {
     const filteredVideos = videos.filter((video: any) => video.id !== id)
     
     // Write back to file
-    fs.writeFileSync(videosFilePath, JSON.stringify(filteredVideos, null, 2))
+    writeVideos(filteredVideos)
     
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('Error deleting video:', error)
     return NextResponse.json({ error: 'Failed to delete video' }, { status: 500 })
   }
 }

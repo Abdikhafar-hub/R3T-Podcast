@@ -157,10 +157,32 @@ export default function AdminPage() {
     setCmsLoading(true)
     try {
       const response = await fetch('/api/cms')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
-      setCmsData(data)
+      // Validate data structure
+      if (data && typeof data === 'object' && !data.error) {
+        setCmsData(data)
+      } else {
+        throw new Error('Invalid data format received')
+      }
     } catch (error) {
+      console.error('Error fetching CMS data:', error)
       toast.error("Failed to fetch CMS data")
+      // Set empty structure to prevent crashes
+      setCmsData({
+        hero: { slides: [] },
+        about: { title: '', content: [], image: '', imageAlt: '' },
+        hosts: { title: '', hosts: [] },
+        producer: { title: '', name: '', image: '', bio: '' },
+        testimonials: { title: '', subtitle: '', testimonials: [] },
+        partners: { title: '', subtitle: '', platforms: [] },
+        contact: { title: '', subtitle: '', email: '', socialLinks: [] },
+        footer: { logo: '', description: '', email: '', location: '', quickLinks: [], socialLinks: [] },
+        navbar: { logo: '', navLinks: [], ctaText: '', ctaLink: '' }
+      })
     } finally {
       setCmsLoading(false)
     }
@@ -194,10 +216,22 @@ export default function AdminPage() {
     setLoading(true)
     try {
       const response = await fetch('/api/videos')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
-      setVideos(data)
+      // Validate data is an array
+      if (Array.isArray(data)) {
+        setVideos(data)
+      } else {
+        throw new Error('Invalid data format: expected array')
+      }
     } catch (error) {
+      console.error('Error fetching videos:', error)
       toast.error("Failed to fetch videos")
+      // Set empty array to prevent crashes
+      setVideos([])
     } finally {
       setLoading(false)
     }
@@ -929,7 +963,7 @@ function ImageUploadButton({ onUpload }: { onUpload: (url: string) => void }) {
 
 // Section Editor Components
 function HeroSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [slides, setSlides] = useState(data.slides || [])
+  const [slides, setSlides] = useState(Array.isArray(data?.slides) ? data.slides : [])
 
   // Sync slides with data prop when it changes
   useEffect(() => {
@@ -1060,11 +1094,23 @@ function HeroSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any
 }
 
 function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    title: data?.title || '',
+    content: Array.isArray(data?.content) ? data.content : [],
+    image: data?.image || '',
+    imageAlt: data?.imageAlt || ''
+  })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData(data)
+    if (data) {
+      setFormData({
+        title: data.title || '',
+        content: Array.isArray(data.content) ? data.content : [],
+        image: data.image || '',
+        imageAlt: data.imageAlt || ''
+      })
+    }
   }, [data])
 
   const updateField = (field: string, value: any) => {
@@ -1072,7 +1118,7 @@ function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: an
   }
 
   const updateContent = (index: number, value: string) => {
-    const newContent = [...formData.content]
+    const newContent = Array.isArray(formData.content) ? [...formData.content] : []
     newContent[index] = value
     setFormData({ ...formData, content: newContent })
   }
@@ -1171,15 +1217,23 @@ function AboutSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: an
 }
 
 function HostsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    title: data?.title || '',
+    hosts: Array.isArray(data?.hosts) ? data.hosts : []
+  })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData(data)
+    if (data) {
+      setFormData({
+        title: data.title || '',
+        hosts: Array.isArray(data.hosts) ? data.hosts : []
+      })
+    }
   }, [data])
 
   const updateHost = (index: number, field: string, value: string) => {
-    const newHosts = [...formData.hosts]
+    const newHosts = Array.isArray(formData.hosts) ? [...formData.hosts] : []
     newHosts[index] = { ...newHosts[index], [field]: value }
     setFormData({ ...formData, hosts: newHosts })
   }
@@ -1366,15 +1420,25 @@ function ProducerSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
 }
 
 function TestimonialsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    title: data?.title || '',
+    subtitle: data?.subtitle || '',
+    testimonials: Array.isArray(data?.testimonials) ? data.testimonials : []
+  })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData(data)
+    if (data) {
+      setFormData({
+        title: data.title || '',
+        subtitle: data.subtitle || '',
+        testimonials: Array.isArray(data.testimonials) ? data.testimonials : []
+      })
+    }
   }, [data])
 
   const updateTestimonial = (index: number, field: string, value: string) => {
-    const newTestimonials = [...formData.testimonials]
+    const newTestimonials = Array.isArray(formData.testimonials) ? [...formData.testimonials] : []
     newTestimonials[index] = { ...newTestimonials[index], [field]: value }
     setFormData({ ...formData, testimonials: newTestimonials })
   }
@@ -1506,16 +1570,20 @@ function TestimonialsSectionEditor({ data, onUpdate }: { data: any, onUpdate: (d
 
 function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState({
-    ...data,
-    platforms: data.platforms || []
+    title: data?.title || '',
+    subtitle: data?.subtitle || '',
+    platforms: Array.isArray(data?.platforms) ? data.platforms : []
   })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData({
-      ...data,
-      platforms: data.platforms || []
-    })
+    if (data) {
+      setFormData({
+        title: data.title || '',
+        subtitle: data.subtitle || '',
+        platforms: Array.isArray(data.platforms) ? data.platforms : []
+      })
+    }
   }, [data])
 
   const updatePlatform = (index: number, field: string, value: string) => {
@@ -1674,20 +1742,26 @@ function PartnersSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data:
 
 function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
   const [formData, setFormData] = useState({
-    ...data,
-    socialLinks: data.socialLinks || []
+    title: data?.title || '',
+    subtitle: data?.subtitle || '',
+    email: data?.email || '',
+    socialLinks: Array.isArray(data?.socialLinks) ? data.socialLinks : []
   })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData({
-      ...data,
-      socialLinks: data.socialLinks || []
-    })
+    if (data) {
+      setFormData({
+        title: data.title || '',
+        subtitle: data.subtitle || '',
+        email: data.email || '',
+        socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : []
+      })
+    }
   }, [data])
 
   const updateSocialLink = (index: number, field: string, value: string) => {
-    const currentSocialLinks = formData.socialLinks || []
+    const currentSocialLinks = Array.isArray(formData.socialLinks) ? formData.socialLinks : []
     const newSocialLinks = [...currentSocialLinks]
     newSocialLinks[index] = { ...newSocialLinks[index], [field]: value }
     setFormData({ ...formData, socialLinks: newSocialLinks })
@@ -1860,32 +1934,52 @@ function ContactSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: 
 }
 
 function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    logo: data?.logo || '',
+    description: data?.description || '',
+    email: data?.email || '',
+    location: data?.location || '',
+    quickLinks: Array.isArray(data?.quickLinks) ? data.quickLinks : [],
+    socialLinks: Array.isArray(data?.socialLinks) ? data.socialLinks : []
+  })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData(data)
+    if (data) {
+      setFormData({
+        logo: data.logo || '',
+        description: data.description || '',
+        email: data.email || '',
+        location: data.location || '',
+        quickLinks: Array.isArray(data.quickLinks) ? data.quickLinks : [],
+        socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : []
+      })
+    }
   }, [data])
 
   const updateQuickLink = (index: number, field: string, value: string) => {
-    const newQuickLinks = [...formData.quickLinks]
+    const currentQuickLinks = Array.isArray(formData.quickLinks) ? formData.quickLinks : []
+    const newQuickLinks = [...currentQuickLinks]
     newQuickLinks[index] = { ...newQuickLinks[index], [field]: value }
     setFormData({ ...formData, quickLinks: newQuickLinks })
   }
 
   const updateSocialLink = (index: number, field: string, value: string) => {
-    const newSocialLinks = [...formData.socialLinks]
+    const currentSocialLinks = Array.isArray(formData.socialLinks) ? formData.socialLinks : []
+    const newSocialLinks = [...currentSocialLinks]
     newSocialLinks[index] = { ...newSocialLinks[index], [field]: value }
     setFormData({ ...formData, socialLinks: newSocialLinks })
   }
 
   const addQuickLink = () => {
     const newQuickLink = { name: '', href: '' }
-    setFormData({ ...formData, quickLinks: [...formData.quickLinks, newQuickLink] })
+    const currentQuickLinks = Array.isArray(formData.quickLinks) ? formData.quickLinks : []
+    setFormData({ ...formData, quickLinks: [...currentQuickLinks, newQuickLink] })
   }
 
   const removeQuickLink = (index: number) => {
-    const newQuickLinks = formData.quickLinks.filter((_: any, i: number) => i !== index)
+    const currentQuickLinks = Array.isArray(formData.quickLinks) ? formData.quickLinks : []
+    const newQuickLinks = currentQuickLinks.filter((_: any, i: number) => i !== index)
     setFormData({ ...formData, quickLinks: newQuickLinks })
   }
 
@@ -2094,26 +2188,41 @@ function FooterSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: a
 }
 
 function NavbarSectionEditor({ data, onUpdate }: { data: any, onUpdate: (data: any) => void }) {
-  const [formData, setFormData] = useState(data)
+  const [formData, setFormData] = useState({
+    logo: data?.logo || '',
+    navLinks: Array.isArray(data?.navLinks) ? data.navLinks : [],
+    ctaText: data?.ctaText || '',
+    ctaLink: data?.ctaLink || ''
+  })
 
   // Sync formData with data prop when it changes
   useEffect(() => {
-    setFormData(data)
+    if (data) {
+      setFormData({
+        logo: data.logo || '',
+        navLinks: Array.isArray(data.navLinks) ? data.navLinks : [],
+        ctaText: data.ctaText || '',
+        ctaLink: data.ctaLink || ''
+      })
+    }
   }, [data])
 
   const updateNavLink = (index: number, field: string, value: string) => {
-    const newNavLinks = [...formData.navLinks]
+    const currentNavLinks = Array.isArray(formData.navLinks) ? formData.navLinks : []
+    const newNavLinks = [...currentNavLinks]
     newNavLinks[index] = { ...newNavLinks[index], [field]: value }
     setFormData({ ...formData, navLinks: newNavLinks })
   }
 
   const addNavLink = () => {
     const newNavLink = { href: '', label: '' }
-    setFormData({ ...formData, navLinks: [...formData.navLinks, newNavLink] })
+    const currentNavLinks = Array.isArray(formData.navLinks) ? formData.navLinks : []
+    setFormData({ ...formData, navLinks: [...currentNavLinks, newNavLink] })
   }
 
   const removeNavLink = (index: number) => {
-    const newNavLinks = formData.navLinks.filter((_: any, i: number) => i !== index)
+    const currentNavLinks = Array.isArray(formData.navLinks) ? formData.navLinks : []
+    const newNavLinks = currentNavLinks.filter((_: any, i: number) => i !== index)
     setFormData({ ...formData, navLinks: newNavLinks })
   }
 
