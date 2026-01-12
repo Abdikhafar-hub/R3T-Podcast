@@ -91,25 +91,11 @@ export default function Contact() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 sm:mb-12 md:mb-16"
+          className="text-center mb-16"
         >
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-3 sm:mb-4">
-            {(() => {
-              const words = contactData.title.split(' ')
-              if (words.length >= 2) {
-                return (
-                  <>
-                    {words.slice(0, -1).join(' ')} <span className="text-primary">{words.slice(-1)[0]}</span>
-                  </>
-                )
-              } else {
-                return <span className="text-primary">{contactData.title}</span>
-              }
-            })()}
+          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl mb-4">
+            Contact <span className="text-primary">Us</span>
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-            {contactData.subtitle}
-          </p>
         </motion.div>
 
         <div className="max-w-2xl mx-auto">
