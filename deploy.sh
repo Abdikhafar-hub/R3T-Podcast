@@ -33,12 +33,26 @@ else
   echo "  ⚠ videos.json not found (will be created from example if needed)"
 fi
 
-# Step 2: Pull latest changes from GitHub
+# Step 2: Ensure protected files are not tracked by git
+echo ""
+echo "🔒 Ensuring protected files are not tracked by git..."
+if git ls-files --error-unmatch "$CMS_FILE" > /dev/null 2>&1; then
+  echo "  ⚠ WARNING: $CMS_FILE is tracked in git! Removing from tracking..."
+  git rm --cached "$CMS_FILE" 2>/dev/null || true
+  echo "  ✓ Removed $CMS_FILE from git tracking"
+fi
+if git ls-files --error-unmatch "$VIDEOS_FILE" > /dev/null 2>&1; then
+  echo "  ⚠ WARNING: $VIDEOS_FILE is tracked in git! Removing from tracking..."
+  git rm --cached "$VIDEOS_FILE" 2>/dev/null || true
+  echo "  ✓ Removed $VIDEOS_FILE from git tracking"
+fi
+
+# Step 3: Pull latest changes from GitHub
 echo ""
 echo "📥 Pulling latest changes from GitHub..."
 git pull
 
-# Step 3: Restore data files (preserve your production data)
+# Step 4: Restore data files (preserve your production data)
 echo ""
 echo "🔄 Restoring data files..."
 
@@ -60,17 +74,17 @@ elif [ -f "$VIDEOS_EXAMPLE" ] && [ ! -f "$VIDEOS_FILE" ]; then
   echo "  ✓ Created videos.json from example file"
 fi
 
-# Step 4: Install dependencies
+# Step 5: Install dependencies
 echo ""
 echo "📦 Installing dependencies..."
 npm install
 
-# Step 5: Build the application
+# Step 6: Build the application
 echo ""
 echo "🔨 Building application..."
 npm run build
 
-# Step 6: Restart the application (adjust based on your setup)
+# Step 7: Restart the application (adjust based on your setup)
 echo ""
 echo "🔄 Restarting application..."
 # Uncomment and modify based on your process manager:

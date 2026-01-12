@@ -4,6 +4,30 @@
 
 **The `cms-data.json` and `videos.json` files are now in `.gitignore`** to prevent local test changes from affecting production.
 
+### 🛡️ Protection System
+
+To prevent accidental loss of admin edits, we've implemented multiple protection layers:
+
+1. **`.gitignore`**: Files are excluded from git tracking
+2. **Pre-commit hook**: Prevents accidentally committing these files (blocks commits if staged)
+3. **Deployment script**: Automatically backs up and restores data files during deployment
+4. **API fallback**: If data files don't exist, the API falls back to example files
+
+### ⚠️ If Files Are Accidentally Tracked
+
+If `cms-data.json` or `videos.json` somehow get tracked in git, run:
+
+```bash
+# Remove from git tracking (keeps local file)
+git rm --cached data/cms-data.json
+git rm --cached data/videos.json
+
+# Commit the removal
+git commit -m "Remove CMS data files from git tracking"
+```
+
+The deployment script will also automatically detect and remove tracked files.
+
 ## Setup Instructions
 
 ### For Local Development:
@@ -45,10 +69,13 @@ Since `cms-data.json` and `videos.json` are gitignored, they won't be pulled fro
 ```
 
 This script will:
-1. Backup your existing data files
-2. Pull latest code from GitHub
-3. Restore your data files (preserving your production content)
-4. Install dependencies, build, and restart
+1. **Backup** your existing data files
+2. **Check and remove** any tracked data files from git (if accidentally committed)
+3. **Pull** latest code from GitHub
+4. **Restore** your data files (preserving your production content)
+5. Install dependencies, build, and restart
+
+**Always use this script for deployments to ensure admin edits are preserved!**
 
 ### Manual Deployment (if not using the script)
 

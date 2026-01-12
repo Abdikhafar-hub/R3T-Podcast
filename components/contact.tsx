@@ -1,13 +1,8 @@
 "use client"
 
-import type React from "react"
-
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
-import { Mail, Send, CheckCircle2, Instagram, Youtube, Linkedin } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Mail, Instagram, Youtube, Linkedin } from "lucide-react"
 
 // Icon mapping
 const iconMap: { [key: string]: any } = {
@@ -58,13 +53,6 @@ function SocialLinkCard({ social, iconMap }: { social: any, iconMap: any }) {
 }
 
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  })
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [contactData, setContactData] = useState({
     title: "Let's Connect",
     subtitle: "Have a story to share? Want to collaborate? We'd love to hear from you.",
@@ -91,30 +79,6 @@ export default function Contact() {
     }
     fetchContactData()
   }, [])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setFormData({ name: "", email: "", message: "" })
-    }, 3000)
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
 
   return (
     <section id="contact" className="py-12 sm:py-20 md:py-24 lg:py-32 relative overflow-hidden">
@@ -148,102 +112,11 @@ export default function Contact() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-6xl mx-auto">
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
-              {!isSubmitted ? (
-                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">
-                      Name
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Your name"
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-2">
-                      Email
-                    </label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="your@email.com"
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium mb-2">
-                      Message
-                    </label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      required
-                      value={formData.message}
-                      onChange={handleChange}
-                      placeholder="Tell us what's on your mind..."
-                      rows={6}
-                      className="w-full resize-none"
-                    />
-                  </div>
-
-                  <Button type="submit" disabled={isSubmitting} className="w-full group" size="lg">
-                    {isSubmitting ? (
-                      <>
-                        <span className="animate-pulse">Sending...</span>
-                      </>
-                    ) : (
-                      <>
-                        Send Message
-                        <Send className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              ) : (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="flex flex-col items-center justify-center py-12 text-center"
-                >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  >
-                    <CheckCircle2 className="w-20 h-20 text-primary mb-4" />
-                  </motion.div>
-                  <h3 className="text-2xl font-semibold mb-2">Message Sent!</h3>
-                  <p className="text-muted-foreground">Thanks for reaching out. We'll get back to you soon.</p>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-
+        <div className="max-w-2xl mx-auto">
           {/* Contact Info */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             className="space-y-6 sm:space-y-8"
